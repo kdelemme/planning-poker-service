@@ -25,7 +25,6 @@ app.post("/rooms", (req, res) => {
 
 io.use((socket, next) => {
   const roomId = socket.handshake.query.roomId;
-  const participant = socket.handshake.query.participant;
 
   if (rooms[roomId] === undefined) {
     return next(new Error("Room not found"));
@@ -35,7 +34,8 @@ io.use((socket, next) => {
 
 io.on("connection", socket => {
   const roomId = socket.handshake.query.roomId;
-  const participant = { id: uuid(), name: socket.handshake.query.participant || socket.id };
+  const participantId = uuid();
+  const participant = { id: participantId, name: socket.handshake.query.participant || socket.id };
 
   socket.join(roomId, err => {
     if (err) {
@@ -47,8 +47,8 @@ io.on("connection", socket => {
   });
 
   socket.on("disconnecting", () => {
-    removeParticipant(roomId, participant.id);
-    removeEstimation(roomId, participant.id);
+    removeParticipant(roomId, participantId);
+    removeEstimation(roomId, participantId);
     io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
 
     if (allParticipantsHaveVoted(roomId)) {
@@ -57,8 +57,8 @@ io.on("connection", socket => {
   });
 
   socket.on("PLAY_CARD", data => {
-    console.log(`Participant ${socket.id} played the card: ${data.value} in roomId ${roomId}`);
-    storeEstimation(roomId, participant.id, data.value);
+    console.log(`Participant ${participantId} played the card ${data.value} in roomId ${roomId}`);
+    storeEstimation(roomId, participantId, data.value);
 
     if (allParticipantsHaveVoted(roomId)) {
       io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
@@ -68,6 +68,11 @@ io.on("connection", socket => {
   socket.on("START_ESTIMATION", data => {
     startEstimation(roomId);
     io.to(roomId).emit("ESTIMATION_STARTED");
+  });
+
+  socket.on("CHANGE_NAME", data => {
+    renameParticipant(roomId, participantId, data.name);
+    io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
   });
 });
 
@@ -81,6 +86,13 @@ const storeParticipant = (roomId, participant) => {
 
 const removeParticipant = (roomId, participantId) => {
   rooms[roomId].participants = listParticipants(roomId).filter(p => p.id !== participantId);
+};
+
+const renameParticipant = (roomId, participantId, name) => {
+  let participant = listParticipants(roomId).find(p => p.id === participantId);
+  if (participant) {
+    participant.name = name;
+  }
 };
 
 const numberOfParticipants = roomId => rooms[roomId].participants.length;

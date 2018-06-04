@@ -6,8 +6,16 @@
     
   </head>
   <body>
-    <p id="participant"></p>
-    <p id="participants"></p>
+    <div>
+      <label>Name: </label>
+      <input type="text" id="participant" />
+    </div>
+    <div>
+      <span>Participants:</span>
+      <span id="participants"></span>
+    </div>
+    
+    <hr />
     <button id="start">Start Vote</button>
     <p id="cards">
       <button id="card1">1</button>
@@ -20,8 +28,7 @@
     <script>
         var socket = io({
           query: {
-            roomId: '39944e90-c9f5-427e-a616-98c3f91b08bb',
-            participant: "Kevin"
+            roomId: '39944e90-c9f5-427e-a616-98c3f91b08bb'
           }
         });
         let participants = [];
@@ -29,16 +36,17 @@
         const card1El = document.getElementById("card1");
         const card2El = document.getElementById("card2");
         const card3El = document.getElementById("card3");
+        const participantEl = document.getElementById("participant");
 
         socket.on("connect", () => {
-          document.getElementById("participant").innerText = `Name: ${socket.id}`;
+          document.getElementById("participant").value = socket.id;
           document.getElementById("cards").childNodes.forEach(node => node.disabled = true);
         });
 
         socket.on("PARTICIPANT_LIST", data => {
           console.log(`received PARTICIPANT_LIST: ${data}`);
           participants = data;
-          document.getElementById("participants").innerText = `Participants: ${participants.join(", ")}`;
+          document.getElementById("participants").innerText = participants.map(p => p.name).join(", ");
         })
 
         socket.on("ESTIMATIONS_RESULT", data => {
@@ -50,6 +58,10 @@
           document.getElementById("cards").childNodes.forEach(node => node.disabled = false);
           document.getElementById("result").innerText = '';
         });
+
+        participantEl.addEventListener('change', (event) => {
+          socket.emit("CHANGE_NAME", { name: event.target.value});
+        })
 
         document.getElementById("start").addEventListener('click', () => {
           socket.emit("START_ESTIMATION");
