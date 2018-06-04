@@ -1,93 +1,117 @@
-var app = require("express")();
-var http = require("http").Server(app);
-var io = require("socket.io")(http);
+const app = require("express")();
+const bodyParser = require("body-parser");
+const http = require("http").Server(app);
+const io = require("socket.io")(http);
+const uuid = require("uuid/v4");
+
+app.use(bodyParser.json());
+
+const rooms = {};
+const participants = {};
+const estimations = {};
+
+// init to be removed
+rooms["39944e90-c9f5-427e-a616-98c3f91b08bb"] = { name: "Borderless" };
+// end
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-const ROOM = "Borderless";
-const participants = {};
-const estimations = {};
+app.post("/rooms", (req, res) => {
+  const payload = req.body;
+  const id = uuid.v4();
+  rooms[id] = { name: payload.name };
+  return res.json({ id, ...rooms[id] });
+});
+
+io.use((socket, next) => {
+  const roomId = socket.handshake.query.roomId;
+
+  if (rooms[roomId]) {
+    return next();
+  }
+  return next(new Error("Room not found"));
+});
 
 io.on("connection", socket => {
-  socket.join(ROOM, err => {
+  const roomId = socket.handshake.query.roomId;
+
+  socket.join(roomId, err => {
     if (err) {
-      console.error(`${socket.id} failed to join ${ROOM}`);
+      console.error(`${socket.id} failed to join ${rooms[roomId]}`);
     }
 
-    storeParticipant(getConnectedRoom(socket), socket.id);
-    io.to(getConnectedRoom(socket)).emit("PARTICIPANT_LIST", participants[getConnectedRoom(socket)]);
+    storeParticipant(roomId, socket.id);
+    io.to(roomId).emit("PARTICIPANT_LIST", participants[roomId]);
   });
 
   socket.on("disconnecting", () => {
-    removeParticipant(getConnectedRoom(socket), socket.id);
-    removeEstimation(getConnectedRoom(socket), socket.id);
-    io.to(getConnectedRoom(socket)).emit("PARTICIPANT_LIST", participants[getConnectedRoom(socket)]);
+    removeParticipant(roomId, socket.id);
+    removeEstimation(roomId, socket.id);
+    io.to(roomId).emit("PARTICIPANT_LIST", participants[roomId]);
 
-    if (allParticipantsHaveVoted(getConnectedRoom(socket))) {
-      io.to(getConnectedRoom(socket)).emit("ESTIMATIONS_RESULT", estimations[getConnectedRoom(socket)]);
+    if (allParticipantsHaveVoted(roomId)) {
+      io.to(roomId).emit("ESTIMATIONS_RESULT", estimations[roomId]);
     }
   });
 
   socket.on("PLAY_CARD", data => {
-    console.log(`${socket.id} played the card: ${data.value}`);
-    storeEstimation(getConnectedRoom(socket), socket.id, data.value);
+    console.log(`Participant ${socket.id} played the card: ${data.value} in roomId ${roomId}`);
+    storeEstimation(roomId, socket.id, data.value);
 
-    if (allParticipantsHaveVoted(getConnectedRoom(socket))) {
-      io.to(getConnectedRoom(socket)).emit("ESTIMATIONS_RESULT", estimations[getConnectedRoom(socket)]);
+    if (allParticipantsHaveVoted(roomId)) {
+      io.to(roomId).emit("ESTIMATIONS_RESULT", estimations[roomId]);
     }
   });
 
   socket.on("START_ESTIMATION", data => {
-    startEstimation(getConnectedRoom(socket));
-    io.to(getConnectedRoom(socket)).emit("ESTIMATION_STARTED");
+    startEstimation(roomId);
+    io.to(roomId).emit("ESTIMATION_STARTED");
   });
 });
 
-const storeParticipant = (room, participant) => {
-  if (participants[room] === undefined) {
-    participants[room] = [];
+const storeParticipant = (roomId, participant) => {
+  if (participants[roomId] === undefined) {
+    participants[roomId] = [];
   }
 
-  participants[room].push(participant);
+  participants[roomId].push(participant);
 };
 
-const removeParticipant = (room, participant) => {
-  participants[room] = participants[room].filter(p => p !== participant);
+const removeParticipant = (roomId, participant) => {
+  participants[roomId] = participants[roomId].filter(p => p !== participant);
 };
 
-const numberOfParticipants = room => participants[room].length;
+const numberOfParticipants = roomId => participants[roomId].length;
 
-const startEstimation = room => (estimations[room] = []);
+const startEstimation = roomId => (estimations[roomId] = []);
 
-const storeEstimation = (room, participant, estimation) => {
-  if (estimations[room] === undefined) {
-    estimations[room] = [];
+const storeEstimation = (roomId, participant, estimation) => {
+  if (estimations[roomId] === undefined) {
+    estimations[roomId] = [];
   }
 
-  let existingEstimation = estimations[room].find(e => e.participant === participant);
+  let existingEstimation = estimations[roomId].find(e => e.participant === participant);
   if (!existingEstimation) {
-    estimations[room].push({ participant, estimation });
+    estimations[roomId].push({ participant, estimation });
   } else {
     existingEstimation.estimation = estimation;
   }
 };
 
-const removeEstimation = (room, participant) => {
-  if (estimations[room]) {
-    estimations[room] = estimations[room].filter(estimation => estimation.participant !== participant);
+const removeEstimation = (roomId, participant) => {
+  if (estimations[roomId]) {
+    estimations[roomId] = estimations[roomId].filter(estimation => estimation.participant !== participant);
   }
 };
 
-const allParticipantsHaveVoted = room => {
+const allParticipantsHaveVoted = roomId => {
   return (
-    estimations[room] &&
-    participants[room].every(participant => estimations[room].find(e => e.participant === participant))
+    estimations[roomId] &&
+    participants[roomId].every(participant => estimations[roomId].find(e => e.participant === participant))
   );
 };
-
-const getConnectedRoom = socket => Object.values(socket.rooms).find(room => room !== socket.id);
 
 http.listen(3000, () => {
   console.log("listening on *:3000");

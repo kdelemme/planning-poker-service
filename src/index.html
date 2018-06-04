@@ -18,7 +18,11 @@
     <p id="result"></p>
 
     <script>
-        var socket = io();
+        var socket = io({
+          query: {
+            roomId: '39944e90-c9f5-427e-a616-98c3f91b08bb'
+          }
+        });
         let participants = [];
 
         const card1El = document.getElementById("card1");
