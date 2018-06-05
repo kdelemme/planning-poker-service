@@ -12,10 +12,6 @@ const rooms = {};
 rooms["39944e90-c9f5-427e-a616-98c3f91b08bb"] = { name: "Borderless" };
 // end
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
-
 app.post("/rooms", (req, res) => {
   const payload = req.body;
   const id = uuid();
