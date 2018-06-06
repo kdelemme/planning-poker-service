@@ -55,6 +55,7 @@ io.on("connection", socket => {
   socket.on("PLAY_CARD", data => {
     console.log(`Participant ${participantId} played the card ${data.value} in roomId ${roomId}`);
     storeEstimation(roomId, participantId, data.value);
+    io.to(roomId).emit("CARD_PLAYED", { participantId });
 
     if (allParticipantsHaveVoted(roomId)) {
       io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
@@ -67,8 +68,8 @@ io.on("connection", socket => {
   });
 
   socket.on("CHANGE_NAME", data => {
-    renameParticipant(roomId, participantId, data.name);
-    io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
+    let participant = renameParticipant(roomId, participantId, data.name);
+    io.to(roomId).emit("NAME_CHANGED", participant);
   });
 });
 
@@ -89,6 +90,7 @@ const renameParticipant = (roomId, participantId, name) => {
   if (participant) {
     participant.name = name;
   }
+  return participant;
 };
 
 const numberOfParticipants = roomId => rooms[roomId].participants.length;
