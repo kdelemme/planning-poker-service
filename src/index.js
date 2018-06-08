@@ -8,22 +8,12 @@ app.use(bodyParser.json());
 
 const rooms = {};
 
-// init to be removed
-rooms["39944e90-c9f5-427e-a616-98c3f91b08bb"] = { name: "Borderless" };
-// end
-
-app.post("/rooms", (req, res) => {
-  const payload = req.body;
-  const id = uuid();
-  rooms[id] = { name: payload.name };
-  return res.json({ id, ...rooms[id] });
-});
-
 io.use((socket, next) => {
   const roomId = socket.handshake.query.roomId;
 
   if (rooms[roomId] === undefined) {
-    return next(new Error("Room not found"));
+    rooms[roomId] = {};
+    socket.handshake.query.isAdmin = true;
   }
   return next();
 });
@@ -31,7 +21,11 @@ io.use((socket, next) => {
 io.on("connection", socket => {
   const roomId = socket.handshake.query.roomId;
   const participantId = uuid();
-  const participant = { id: participantId, name: socket.handshake.query.participant || socket.id };
+  const participant = {
+    id: participantId,
+    name: socket.handshake.query.participant || socket.id,
+    isAdmin: socket.handshake.query.isAdmin || false
+  };
 
   socket.join(roomId, err => {
     if (err) {
@@ -39,12 +33,14 @@ io.on("connection", socket => {
     }
 
     storeParticipant(roomId, participant);
+    socket.emit("ON_CONNECT", { participantId });
     io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
   });
 
   socket.on("disconnecting", () => {
     removeParticipant(roomId, participantId);
     removeEstimation(roomId, participantId);
+    changeAdmin(roomId, participantId);
     io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
 
     if (allParticipantsHaveVoted(roomId)) {
@@ -53,7 +49,6 @@ io.on("connection", socket => {
   });
 
   socket.on("PLAY_CARD", data => {
-    console.log(`Participant ${participantId} played the card ${data.value} in roomId ${roomId}`);
     storeEstimation(roomId, participantId, data.value);
     io.to(roomId).emit("CARD_PLAYED", { participantId });
 
@@ -63,8 +58,10 @@ io.on("connection", socket => {
   });
 
   socket.on("START_ESTIMATION", data => {
-    startEstimation(roomId);
-    io.to(roomId).emit("ESTIMATION_STARTED");
+    if (participant.isAdmin) {
+      startEstimation(roomId);
+      io.to(roomId).emit("ESTIMATION_STARTED");
+    }
   });
 
   socket.on("CHANGE_NAME", data => {
@@ -118,6 +115,12 @@ const removeEstimation = (roomId, participantId) => {
   }
 };
 
+const changeAdmin = (roomId, participantId) => {
+  if (rooms[roomId].participants && rooms[roomId].participants.length > 0) {
+    rooms[roomId].participants[0].isAdmin = true;
+  }
+};
+
 const allParticipantsHaveVoted = roomId => {
   return (
     listEstimations(roomId) &&
@@ -127,6 +130,8 @@ const allParticipantsHaveVoted = roomId => {
 
 const listParticipants = roomId => rooms[roomId].participants;
 const listEstimations = roomId => rooms[roomId].estimations;
+
+const isAdmin = participant => participant.isAdmin;
 
 http.listen(3000, () => {
   console.log("listening on *:3000");
