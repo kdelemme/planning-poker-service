@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 const rooms = {};
 
 io.use((socket, next) => {
-  const roomId = socket.handshake.query.roomId;
+  const { roomId, name } = socket.handshake.query;
 
   if (rooms[roomId] === undefined) {
     rooms[roomId] = {};
@@ -23,7 +23,7 @@ io.on("connection", socket => {
   const participantId = uuid();
   const participant = {
     id: participantId,
-    name: socket.handshake.query.participant || socket.id,
+    name: socket.handshake.query.name || socket.id,
     isAdmin: socket.handshake.query.isAdmin || false
   };
 
@@ -63,11 +63,6 @@ io.on("connection", socket => {
       io.to(roomId).emit("ESTIMATION_STARTED");
     }
   });
-
-  socket.on("CHANGE_NAME", data => {
-    let participant = renameParticipant(roomId, participantId, data.name);
-    io.to(roomId).emit("NAME_CHANGED", participant);
-  });
 });
 
 const storeParticipant = (roomId, participant) => {
@@ -80,14 +75,6 @@ const storeParticipant = (roomId, participant) => {
 
 const removeParticipant = (roomId, participantId) => {
   rooms[roomId].participants = listParticipants(roomId).filter(p => p.id !== participantId);
-};
-
-const renameParticipant = (roomId, participantId, name) => {
-  let participant = listParticipants(roomId).find(p => p.id === participantId);
-  if (participant) {
-    participant.name = name;
-  }
-  return participant;
 };
 
 const numberOfParticipants = roomId => rooms[roomId].participants.length;
