@@ -9,11 +9,10 @@ app.use(bodyParser.json());
 const rooms = {};
 
 io.use((socket, next) => {
-  const { roomId, name } = socket.handshake.query;
+  const { roomId } = socket.handshake.query;
 
   if (rooms[roomId] === undefined) {
     rooms[roomId] = {};
-    socket.handshake.query.isAdmin = true;
   }
   return next();
 });
@@ -23,8 +22,8 @@ io.on("connection", socket => {
   const participantId = uuid();
   const participant = {
     id: participantId,
-    name: socket.handshake.query.name || socket.id,
-    isAdmin: socket.handshake.query.isAdmin || false
+    name: socket.handshake.query.name,
+    isAdmin: rooms[roomId].participants && rooms[roomId].participants.length === 0
   };
 
   socket.join(roomId, err => {
@@ -103,7 +102,9 @@ const removeEstimation = (roomId, participantId) => {
 };
 
 const changeAdmin = (roomId, participantId) => {
-  if (rooms[roomId].participants && rooms[roomId].participants.length > 0) {
+  let adminStillConnected = rooms[roomId].participants.find(p => p.isAdmin);
+
+  if (!adminStillConnected && rooms[roomId].participants.length > 0) {
     rooms[roomId].participants[0].isAdmin = true;
   }
 };
