@@ -58,7 +58,7 @@ io.on("connection", socket => {
     storeEstimation(roomId, participantId, data.value);
     markParticipantAsVoted(roomId, participantId);
 
-    io.to(roomId).emit("CARD_PLAYED", { participantId });
+    io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
 
     if (allParticipantsHaveVoted(roomId)) {
       io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
