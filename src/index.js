@@ -23,7 +23,8 @@ io.on("connection", socket => {
   const participant = {
     id: participantId,
     name: socket.handshake.query.name,
-    isAdmin: rooms[roomId].participants && rooms[roomId].participants.length === 0
+    isAdmin: rooms[roomId].participants === undefined || rooms[roomId].participants.length === 0,
+    hasVoted: false
   };
 
   socket.join(roomId, err => {
@@ -34,12 +35,18 @@ io.on("connection", socket => {
     storeParticipant(roomId, participant);
     socket.emit("ON_CONNECT", { participantId });
     io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
+
+    if (rooms[roomId].estimationInProgress) {
+      socket.emit("ESTIMATION_STARTED");
+    }
   });
 
   socket.on("disconnecting", () => {
     removeParticipant(roomId, participantId);
     removeEstimation(roomId, participantId);
+
     changeAdmin(roomId, participantId);
+
     io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
 
     if (allParticipantsHaveVoted(roomId)) {
@@ -49,6 +56,8 @@ io.on("connection", socket => {
 
   socket.on("PLAY_CARD", data => {
     storeEstimation(roomId, participantId, data.value);
+    markParticipantAsVoted(roomId, participantId);
+
     io.to(roomId).emit("CARD_PLAYED", { participantId });
 
     if (allParticipantsHaveVoted(roomId)) {
@@ -59,6 +68,7 @@ io.on("connection", socket => {
   socket.on("START_ESTIMATION", data => {
     if (participant.isAdmin) {
       startEstimation(roomId);
+      io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
       io.to(roomId).emit("ESTIMATION_STARTED");
     }
   });
@@ -78,7 +88,13 @@ const removeParticipant = (roomId, participantId) => {
 
 const numberOfParticipants = roomId => rooms[roomId].participants.length;
 
-const startEstimation = roomId => (rooms[roomId].estimations = []);
+const startEstimation = roomId => {
+  rooms[roomId].estimationInProgress = true;
+  rooms[roomId].estimations = [];
+  rooms[roomId].participants = rooms[roomId].participants.map(p => {
+    return { ...p, hasVoted: false };
+  });
+};
 
 const storeEstimation = (roomId, participantId, estimation) => {
   if (listEstimations(roomId) === undefined) {
@@ -93,8 +109,13 @@ const storeEstimation = (roomId, participantId, estimation) => {
   }
 };
 
+const markParticipantAsVoted = (roomId, participantId) => {
+  let participant = listParticipants(roomId).find(p => p.id === participantId);
+  participant.hasVoted = true;
+};
+
 const removeEstimation = (roomId, participantId) => {
-  if (listEstimations(roomId)) {
+  if (rooms[roomId].estimationInProgress && listEstimations(roomId)) {
     rooms[roomId].estimations = listEstimations(roomId).filter(
       estimation => estimation.participantId !== participantId
     );
