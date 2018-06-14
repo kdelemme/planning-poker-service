@@ -51,6 +51,7 @@ io.on("connection", socket => {
 
     if (allParticipantsHaveVoted(roomId)) {
       io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
+      rooms[roomId].estimationInProgress = false;
     }
   });
 
@@ -62,6 +63,7 @@ io.on("connection", socket => {
 
     if (allParticipantsHaveVoted(roomId)) {
       io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
+      rooms[roomId].estimationInProgress = false;
     }
   });
 
