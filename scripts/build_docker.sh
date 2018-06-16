@@ -1,5 +1,6 @@
 #!/bin/bash
 
-GIT_COMMIT_HASH=`(head=($(<.git/HEAD)); cat .git/${head[1]})`
+docker build --rm -t kdelemme/planning-poker-service .
 
-docker build -t kdelemme/planning-poker-service:${GIT_COMMIT_HASH} .
+docker tag kdelemme/planning-poker-service \
+  168458823459.dkr.ecr.eu-west-1.amazonaws.com/kdelemme/planning-poker-service
