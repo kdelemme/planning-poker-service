@@ -1,6 +1,7 @@
 const expect = require("chai").expect;
 const Room = require("../../../src/domain/model/room");
 const Participant = require("../../../src/domain/model/participant");
+const Estimation = require("../../../src/domain/model/estimation");
 
 describe("Room", () => {
   it("should initiate with default parameters", () => {
@@ -51,6 +52,25 @@ describe("Room", () => {
       aRoom.removeParticipant(aParticipant1);
 
       expect(aRoom.listParticipants()).to.have.lengthOf(1);
+      expect(aRoom.listParticipants()[0]).to.eq(aParticipant2);
+    });
+
+    it("should remove participant estimations", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 3));
+      expect(aRoom.listEstimations()).to.have.lengthOf(1);
+
+      aRoom.removeParticipant(aParticipant1);
+
+      expect(aRoom.listEstimations()).to.have.lengthOf(0);
+    });
+
+    it("should change the admin", () => {
+      expect(aParticipant1.isAdmin()).to.be.true;
+      expect(aParticipant2.isAdmin()).to.be.false;
+
+      aRoom.removeParticipant(aParticipant1);
+
+      expect(aRoom.isAdmin(aParticipant2.id)).to.be.true;
     });
   });
 });

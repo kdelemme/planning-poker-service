@@ -11,6 +11,9 @@ module.exports = class Room {
 
   storeParticipant(participant) {
     this.participants.push(participant);
+    if (this.participants.length === 1) {
+      this.participants[0].markAsAdmin();
+    }
   }
 
   listParticipants() {
@@ -21,7 +24,7 @@ module.exports = class Room {
     this.participants = this.participants.filter(p => p.id !== participant.id);
     this.estimations = this.estimations.filter(estimation => estimation.participantId !== participant.id);
 
-    let adminStillConnected = this.participants.find(p => p.isAdmin);
+    let adminStillConnected = this.participants.find(p => p.isAdmin());
     if (!adminStillConnected && this.participants.length > 0) {
       this.participants[0].markAsAdmin();
     }
@@ -32,7 +35,7 @@ module.exports = class Room {
   }
 
   startEstimation(participant) {
-    if (!this.isAdmin()) {
+    if (!this.isAdmin(participant.id)) {
       return false;
     }
     this.estimationInProgress = true;
@@ -45,7 +48,7 @@ module.exports = class Room {
   storeEstimation(estimation) {
     let existingEstimation = this.estimations.find(e => e.participantId === estimation.participantId);
     if (!existingEstimation) {
-      this.estimations.push(new Estimation(participantId, estimation));
+      this.estimations.push(estimation);
     } else {
       existingEstimation.estimation = estimation;
     }
@@ -71,6 +74,6 @@ module.exports = class Room {
   }
 
   isAdmin(participantId) {
-    return this.participants.find(p => p.id === participantId && p.isAdmin());
+    return this.participants.find(p => p.id === participantId && p.isAdmin()) !== undefined;
   }
 };
