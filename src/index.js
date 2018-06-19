@@ -9,138 +9,136 @@ app.use(bodyParser.json());
 const rooms = {};
 
 io.use((socket, next) => {
-  const { roomId } = socket.handshake.query;
+  const { room } = socket.handshake.query;
 
-  if (rooms[roomId] === undefined) {
-    rooms[roomId] = {};
+  if (rooms[room] === undefined) {
+    rooms[room] = {};
   }
   return next();
 });
 
 io.on("connection", socket => {
-  const roomId = socket.handshake.query.roomId;
+  const room = socket.handshake.query.room;
   const participantId = uuid();
   const participant = {
     id: participantId,
     name: socket.handshake.query.name,
-    isAdmin: rooms[roomId].participants === undefined || rooms[roomId].participants.length === 0,
+    isAdmin: rooms[room].participants === undefined || rooms[room].participants.length === 0,
     hasVoted: false
   };
 
-  socket.join(roomId, err => {
+  socket.join(room, err => {
     if (err) {
-      console.error(`${socket.id} failed to join ${rooms[roomId]}`);
+      console.error(`${socket.id} failed to join ${rooms[room]}`);
     }
 
-    storeParticipant(roomId, participant);
+    storeParticipant(room, participant);
     socket.emit("ON_CONNECT", { participantId });
-    io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
+    io.to(room).emit("PARTICIPANT_LIST", listParticipants(room));
 
-    if (rooms[roomId].estimationInProgress) {
+    if (rooms[room].estimationInProgress) {
       socket.emit("ESTIMATION_STARTED");
     }
   });
 
   socket.on("disconnecting", () => {
-    removeParticipant(roomId, participantId);
-    removeEstimation(roomId, participantId);
+    removeParticipant(room, participantId);
+    removeEstimation(room, participantId);
 
-    changeAdmin(roomId, participantId);
+    changeAdmin(room, participantId);
 
-    io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
+    io.to(room).emit("PARTICIPANT_LIST", listParticipants(room));
 
-    if (allParticipantsHaveVoted(roomId)) {
-      io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
-      rooms[roomId].estimationInProgress = false;
+    if (allParticipantsHaveVoted(room)) {
+      io.to(room).emit("ESTIMATIONS_RESULT", listEstimations(room));
+      rooms[room].estimationInProgress = false;
     }
   });
 
   socket.on("PLAY_CARD", data => {
-    storeEstimation(roomId, participantId, data.value);
-    markParticipantAsVoted(roomId, participantId);
+    storeEstimation(room, participantId, data.value);
+    markParticipantAsVoted(room, participantId);
 
-    io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
+    io.to(room).emit("PARTICIPANT_LIST", listParticipants(room));
 
-    if (allParticipantsHaveVoted(roomId)) {
-      io.to(roomId).emit("ESTIMATIONS_RESULT", listEstimations(roomId));
-      rooms[roomId].estimationInProgress = false;
+    if (allParticipantsHaveVoted(room)) {
+      io.to(room).emit("ESTIMATIONS_RESULT", listEstimations(room));
+      rooms[room].estimationInProgress = false;
     }
   });
 
   socket.on("START_ESTIMATION", data => {
     if (participant.isAdmin) {
-      startEstimation(roomId);
-      io.to(roomId).emit("PARTICIPANT_LIST", listParticipants(roomId));
-      io.to(roomId).emit("ESTIMATION_STARTED");
+      startEstimation(room);
+      io.to(room).emit("PARTICIPANT_LIST", listParticipants(room));
+      io.to(room).emit("ESTIMATION_STARTED");
     }
   });
 });
 
-const storeParticipant = (roomId, participant) => {
-  if (listParticipants(roomId) === undefined) {
-    rooms[roomId].participants = [];
+const storeParticipant = (room, participant) => {
+  if (listParticipants(room) === undefined) {
+    rooms[room].participants = [];
   }
 
-  rooms[roomId].participants.push(participant);
+  rooms[room].participants.push(participant);
 };
 
-const removeParticipant = (roomId, participantId) => {
-  rooms[roomId].participants = listParticipants(roomId).filter(p => p.id !== participantId);
+const removeParticipant = (room, participantId) => {
+  rooms[room].participants = listParticipants(room).filter(p => p.id !== participantId);
 };
 
-const numberOfParticipants = roomId => rooms[roomId].participants.length;
+const numberOfParticipants = room => rooms[room].participants.length;
 
-const startEstimation = roomId => {
-  rooms[roomId].estimationInProgress = true;
-  rooms[roomId].estimations = [];
-  rooms[roomId].participants = rooms[roomId].participants.map(p => {
+const startEstimation = room => {
+  rooms[room].estimationInProgress = true;
+  rooms[room].estimations = [];
+  rooms[room].participants = rooms[room].participants.map(p => {
     return { ...p, hasVoted: false };
   });
 };
 
-const storeEstimation = (roomId, participantId, estimation) => {
-  if (listEstimations(roomId) === undefined) {
-    rooms[roomId].estimations = [];
+const storeEstimation = (room, participantId, estimation) => {
+  if (listEstimations(room) === undefined) {
+    rooms[room].estimations = [];
   }
 
-  let existingEstimation = listEstimations(roomId).find(e => e.participantId === participantId);
+  let existingEstimation = listEstimations(room).find(e => e.participantId === participantId);
   if (!existingEstimation) {
-    rooms[roomId].estimations.push({ participantId, estimation });
+    rooms[room].estimations.push({ participantId, estimation });
   } else {
     existingEstimation.estimation = estimation;
   }
 };
 
-const markParticipantAsVoted = (roomId, participantId) => {
-  let participant = listParticipants(roomId).find(p => p.id === participantId);
+const markParticipantAsVoted = (room, participantId) => {
+  let participant = listParticipants(room).find(p => p.id === participantId);
   participant.hasVoted = true;
 };
 
-const removeEstimation = (roomId, participantId) => {
-  if (rooms[roomId].estimationInProgress && listEstimations(roomId)) {
-    rooms[roomId].estimations = listEstimations(roomId).filter(
-      estimation => estimation.participantId !== participantId
-    );
+const removeEstimation = (room, participantId) => {
+  if (rooms[room].estimationInProgress && listEstimations(room)) {
+    rooms[room].estimations = listEstimations(room).filter(estimation => estimation.participantId !== participantId);
   }
 };
 
-const changeAdmin = (roomId, participantId) => {
-  let adminStillConnected = rooms[roomId].participants.find(p => p.isAdmin);
+const changeAdmin = (room, participantId) => {
+  let adminStillConnected = rooms[room].participants.find(p => p.isAdmin);
 
-  if (!adminStillConnected && rooms[roomId].participants.length > 0) {
-    rooms[roomId].participants[0].isAdmin = true;
+  if (!adminStillConnected && rooms[room].participants.length > 0) {
+    rooms[room].participants[0].isAdmin = true;
   }
 };
 
-const allParticipantsHaveVoted = roomId => {
+const allParticipantsHaveVoted = room => {
   return (
-    listEstimations(roomId) &&
-    listParticipants(roomId).every(participant => listEstimations(roomId).find(e => e.participantId === participant.id))
+    listEstimations(room) &&
+    listParticipants(room).every(participant => listEstimations(room).find(e => e.participantId === participant.id))
   );
 };
 
-const listParticipants = roomId => rooms[roomId].participants;
-const listEstimations = roomId => rooms[roomId].estimations;
+const listParticipants = room => rooms[room].participants;
+const listEstimations = room => rooms[room].estimations;
 
 const isAdmin = participant => participant.isAdmin;
 
