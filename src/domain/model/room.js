@@ -15,16 +15,27 @@ module.exports = class Room {
 
   removeParticipant(participantId) {
     this.participants = this.participants.filter(p => p.id !== participantId);
+    this.estimations = this.estimations.filter(estimation => estimation.participantId !== participantId);
+
+    let adminStillConnected = this.participants.find(p => p.isAdmin);
+    if (!adminStillConnected && this.participants.length > 0) {
+      this.participants[0].markAsAdmin();
+    }
   }
 
   numberOfParticipants() {
     return rooms[room].participants.length;
   }
 
-  startEstimation() {
+  startEstimation(participant) {
+    if (!this.isAdmin()) {
+      return false;
+    }
     this.estimationInProgress = true;
     this.estimations = [];
     this.participants.forEach(p => p.clearVote());
+
+    return true;
   }
 
   storeEstimation(estimation) {
@@ -34,17 +45,9 @@ module.exports = class Room {
     } else {
       existingEstimation.estimation = estimation;
     }
-  }
 
-  markParticipantAsVoted(participantId) {
-    let participant = this.participants.find(p => p.id === participantId);
+    let participant = this.participants.find(p => p.id === estimation.participantId);
     participant.voted();
-  }
-
-  removeEstimation(participantId) {
-    if (this.estimationInProgress) {
-      this.estimations = this.estimations.filter(estimation => estimation.participantId !== participantId);
-    }
   }
 
   estimationInProgress() {
@@ -53,14 +56,6 @@ module.exports = class Room {
 
   markEstimationAsCompleted() {
     this.estimationInProgress = false;
-  }
-
-  changeAdmin() {
-    let adminStillConnected = this.participants.find(p => p.isAdmin);
-
-    if (!adminStillConnected && this.participants.length > 0) {
-      this.participants[0].markAsAdmin();
-    }
   }
 
   allParticipantsHaveVoted() {

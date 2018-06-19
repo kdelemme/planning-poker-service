@@ -7,12 +7,9 @@ const uuid = require("uuid/v4");
 const Room = require("./domain/model/room");
 const Participant = require("./domain/model/participant");
 const Estimation = require("./domain/model/estimation");
-const roomRepository = require("./infrastructure/persistence/room-repository")();
+const RoomRepository = new require("./infrastructure/persistence/room-repository");
 
 app.use(bodyParser.json());
-
-const rooms = {};
-
 io.use((socket, next) => {
   const { room } = socket.handshake.query;
   roomRepository.save(new Room(undefined, room));
@@ -39,8 +36,6 @@ io.on("connection", socket => {
 
   socket.on("disconnecting", () => {
     room.removeParticipant(participantId);
-    room.removeEstimation(participantId);
-    room.changeAdmin();
 
     io.to(room).emit("PARTICIPANT_LIST", room.listParticipants());
 
@@ -52,7 +47,6 @@ io.on("connection", socket => {
 
   socket.on("PLAY_CARD", data => {
     room.storeEstimation(new Estimation(participantId, data.value));
-    room.markParticipantAsVoted(participantId);
 
     io.to(room).emit("PARTICIPANT_LIST", room.listParticipants());
 
@@ -63,8 +57,7 @@ io.on("connection", socket => {
   });
 
   socket.on("START_ESTIMATION", data => {
-    if (room.isAdmin(participant)) {
-      room.startEstimation();
+    if (room.startEstimation(participant)) {
       io.to(room).emit("PARTICIPANT_LIST", room.listParticipants());
       io.to(room).emit("ESTIMATION_STARTED");
     }
