@@ -35,7 +35,7 @@ describe("Room", () => {
     expect(aRoom.listParticipants()).to.have.lengthOf(1);
   });
 
-  describe("removing participant", () => {
+  describe("Remove participant", () => {
     let aRoom, aParticipant1, aParticipant2;
 
     beforeEach(() => {
@@ -71,6 +71,44 @@ describe("Room", () => {
       aRoom.removeParticipant(aParticipant1);
 
       expect(aRoom.isAdmin(aParticipant2.id)).to.be.true;
+    });
+  });
+
+  describe("Store estimation", () => {
+    let aRoom, aParticipant1, aParticipant2;
+
+    beforeEach(() => {
+      aRoom = new Room();
+      aParticipant1 = new Participant(undefined, "Alice B.");
+      aParticipant2 = new Participant(undefined, "John L.");
+      aRoom.storeParticipant(aParticipant1);
+      aRoom.storeParticipant(aParticipant2);
+    });
+
+    it("should store a new estimation", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 5));
+
+      expect(aRoom.listEstimations()).to.have.lengthOf(1);
+    });
+
+    it("should mark the participant has voted", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 5));
+
+      expect(aRoom.listParticipants()[0]).to.have.property("hasVoted", true);
+    });
+
+    it("should update an existing estimation", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 5));
+
+      expect(aRoom.listEstimations()[0])
+        .to.have.property("estimation")
+        .to.eq(5);
+
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 13));
+
+      expect(aRoom.listEstimations()[0])
+        .to.have.property("estimation")
+        .to.eq(13);
     });
   });
 });

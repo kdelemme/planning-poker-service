@@ -50,7 +50,7 @@ module.exports = class Room {
     if (!existingEstimation) {
       this.estimations.push(estimation);
     } else {
-      existingEstimation.estimation = estimation;
+      existingEstimation.estimation = estimation.estimation;
     }
 
     let participant = this.participants.find(p => p.id === estimation.participantId);
