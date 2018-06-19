@@ -1,7 +1,7 @@
 const uuid = require("uuid/v4");
 
 module.exports = class Participant {
-  constructor(id = uuid(), name, isAdmin = false, hasVoted = false) {
+  constructor(id = uuid(), name = undefined, isAdmin = false, hasVoted = false) {
     this.id = id;
     this.name = name;
     this.isAdmin = isAdmin;

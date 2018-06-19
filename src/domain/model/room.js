@@ -1,7 +1,7 @@
 const uuid = require("uuid/v4");
 
 module.exports = class Room {
-  constructor(id = uuid(), room, participants = [], estimations = [], estimationInProgress = false) {
+  constructor(id = uuid(), room = undefined, participants = [], estimations = [], estimationInProgress = false) {
     this.id = id;
     this.room = room;
     this.participants = participants;
@@ -13,9 +13,13 @@ module.exports = class Room {
     this.participants.push(participant);
   }
 
-  removeParticipant(participantId) {
-    this.participants = this.participants.filter(p => p.id !== participantId);
-    this.estimations = this.estimations.filter(estimation => estimation.participantId !== participantId);
+  listParticipants() {
+    return this.participants;
+  }
+
+  removeParticipant(participant) {
+    this.participants = this.participants.filter(p => p.id !== participant.id);
+    this.estimations = this.estimations.filter(estimation => estimation.participantId !== participant.id);
 
     let adminStillConnected = this.participants.find(p => p.isAdmin);
     if (!adminStillConnected && this.participants.length > 0) {

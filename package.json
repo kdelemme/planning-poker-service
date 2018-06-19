@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon src/index.js",
     "start:prod": "node src/index.js",
-    "test": "mocha"
+    "test": "mocha --recursive",
+    "test:watch": "mocha -w --recursive"
   },
   "author": "Kevin Delemme",
   "license": "MIT",

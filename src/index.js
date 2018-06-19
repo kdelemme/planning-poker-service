@@ -35,7 +35,7 @@ io.on("connection", socket => {
   });
 
   socket.on("disconnecting", () => {
-    room.removeParticipant(participantId);
+    room.removeParticipant(participant);
 
     io.to(room).emit("PARTICIPANT_LIST", room.listParticipants());
 
