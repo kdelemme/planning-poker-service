@@ -45,9 +45,12 @@ jobs:
                     if [ "${CIRCLE_BRANCH}" == "master" ]; then
                         login="$(aws ecr get-login --region eu-west-1)"
                         ${login}
+                        TAG=1.0.$CIRCLE_BUILD_NUM
                         docker tag kdelemme/planning-poker-service \
-                            "${ECR_ENDPOINT}/kdelemme/planning-poker-service:${CIRCLE_SHA1}"
-                        docker push "${ECR_ENDPOINT}/kdelemme/planning-poker-service:${CIRCLE_SHA1}"
+                            "${ECR_ENDPOINT}/kdelemme/planning-poker-service:${TAG}"
+                        docker tag kdelemme/planning-poker-service \
+                            "${ECR_ENDPOINT}/kdelemme/planning-poker-service:latest"
+                        docker push "${ECR_ENDPOINT}/kdelemme/planning-poker-service:${TAG}"
                     fi
 workflows:
     version: 2
