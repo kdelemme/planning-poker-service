@@ -35,7 +35,7 @@ describe("Room", () => {
     expect(aRoom.listParticipants()).to.have.lengthOf(1);
   });
 
-  describe("Remove participant", () => {
+  describe("removeParticipant", () => {
     let aRoom, aParticipant1, aParticipant2;
 
     beforeEach(() => {
@@ -74,7 +74,7 @@ describe("Room", () => {
     });
   });
 
-  describe("Store estimation", () => {
+  describe("storeEstimation", () => {
     let aRoom, aParticipant1, aParticipant2;
 
     beforeEach(() => {
@@ -109,6 +109,84 @@ describe("Room", () => {
       expect(aRoom.listEstimations()[0])
         .to.have.property("estimation")
         .to.eq(13);
+    });
+  });
+
+  describe("startEstimation", () => {
+    let aRoom, aParticipant1, aParticipant2;
+
+    beforeEach(() => {
+      aRoom = new Room();
+      aParticipant1 = new Participant(undefined, "Alice B.");
+      aParticipant2 = new Participant(undefined, "John L.");
+      aRoom.storeParticipant(aParticipant1);
+      aRoom.storeParticipant(aParticipant2);
+    });
+
+    it("should do nothing if participant is not admin", () => {
+      aRoom.startEstimation(aParticipant2);
+
+      expect(aRoom.estimationInProgress).to.be.false;
+    });
+
+    it("should turn estimationInProgress", () => {
+      aRoom.startEstimation(aParticipant1);
+
+      expect(aRoom.estimationInProgress).to.be.true;
+    });
+
+    it("should clean previous estimations result", () => {
+      aRoom.estimations = [new Estimation(aParticipant1.id, 3)];
+
+      aRoom.startEstimation(aParticipant1);
+
+      expect(aRoom.estimations).to.be.empty;
+    });
+
+    it("should clean participants hasVoted status", () => {
+      aRoom.participants[0].hasVoted = true;
+      aRoom.participants[1].hasVoted = true;
+
+      aRoom.startEstimation(aParticipant1);
+
+      expect(aRoom.participants[0].hasVoted).to.be.false;
+      expect(aRoom.participants[1].hasVoted).to.be.false;
+    });
+  });
+
+  describe("storeEstimation", () => {
+    let aRoom, aParticipant1, aParticipant2;
+
+    beforeEach(() => {
+      aRoom = new Room();
+      aParticipant1 = new Participant(undefined, "Alice B.");
+      aParticipant2 = new Participant(undefined, "John L.");
+      aRoom.storeParticipant(aParticipant1);
+      aRoom.storeParticipant(aParticipant2);
+    });
+
+    it("shoud add new estimation", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 3));
+
+      expect(aRoom.estimations).to.have.lengthOf(1);
+      expect(aRoom.estimations[0]).to.have.property("participantId", aParticipant1.id);
+      expect(aRoom.estimations[0]).to.have.property("estimation", 3);
+    });
+
+    it("shoud update existing estimation", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 3));
+      expect(aRoom.estimations).to.have.lengthOf(1);
+      expect(aRoom.estimations[0]).to.have.property("estimation", 3);
+
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 5));
+      expect(aRoom.estimations).to.have.lengthOf(1);
+      expect(aRoom.estimations[0]).to.have.property("estimation", 5);
+    });
+
+    it("shoud mark the participant hasVoted", () => {
+      aRoom.storeEstimation(new Estimation(aParticipant1.id, 3));
+
+      expect(aRoom.participants[0].hasVoted).to.be.true;
     });
   });
 });
