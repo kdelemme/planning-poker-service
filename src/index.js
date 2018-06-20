@@ -22,7 +22,7 @@ io.on("connection", socket => {
 
   socket.join(room, err => {
     if (err) {
-      console.error(`${socket.id} failed to join ${rooms[room]}`);
+      console.error(`${socket.id} failed to join ${room}`);
     }
 
     room.storeParticipant(participant);
