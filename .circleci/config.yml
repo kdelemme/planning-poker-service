@@ -43,7 +43,7 @@ jobs:
                 name: Push Docker image
                 command: |
                     if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                        login="$(aws ecr get-login)"
+                        login="$(aws ecr get-login --region eu-west-1)"
                         ${login}
                         docker tag kdelemme/planning-poker-service \
                             "${ECR_ENDPOINT}/kdelemme/planning-poker-service:${CIRCLE_SHA1}"
