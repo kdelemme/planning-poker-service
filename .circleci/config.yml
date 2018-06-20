@@ -27,6 +27,7 @@ jobs:
             - image: docker:17.05.0-ce-git
         steps:
             - checkout
+            - setup_remote_docker
             - restore_cache: 
                 key: dependency-cache-{{ checksum "package.json" }}
             - run:
