@@ -1,26 +1,25 @@
 const uuid = require("uuid/v4");
 
 module.exports = class Participant {
-  constructor(id = uuid(), name = undefined, admin = false, hasVoted = false) {
+  constructor(id = uuid(), name = undefined, isAdmin = false, hasVoted = false, card = null) {
     this.id = id;
     this.name = name;
-    this.admin = admin;
+    this.isAdmin = isAdmin;
     this.hasVoted = hasVoted;
-  }
-
-  isAdmin() {
-    return this.admin;
+    this.card = card;
   }
 
   markAsAdmin() {
-    this.admin = true;
+    this.isAdmin = true;
   }
 
-  voted() {
+  vote(card) {
     this.hasVoted = true;
+    this.card = card;
   }
 
   clearVote() {
     this.hasVoted = false;
+    this.card = null;
   }
 };
