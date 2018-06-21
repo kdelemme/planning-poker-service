@@ -7,19 +7,27 @@ const uuid = require("uuid/v4");
 const Room = require("./domain/model/room");
 const Participant = require("./domain/model/participant");
 
-const rooms = {};
+const InMemoryRoomRepository = require("./infrastructure/persistence/inMemoryRoomRepository");
+const RoomRepository =
+  process.env.NODE_ENV === "production" ? new InMemoryRoomRepository() : new InMemoryRoomRepository();
 
 app.use(bodyParser.json());
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 io.use((socket, next) => {
   const { room } = socket.handshake.query;
-  if (!rooms[room]) {
-    rooms[room] = new Room({ room });
+  if (!RoomRepository.findByRoomName(room)) {
+    RoomRepository.save(new Room({ room }));
   }
   return next();
 });
 
 io.on("connection", socket => {
-  const room = rooms[socket.handshake.query.room];
+  const room = RoomRepository.findByRoomName(socket.handshake.query.room);
   const participant = new Participant({ name: socket.handshake.query.name });
 
   socket.join(room, err => {
@@ -67,5 +75,5 @@ io.on("connection", socket => {
 });
 
 http.listen(3000, () => {
-  console.log("listening on *:3000");
+  console.log(`listening on *:3000`);
 });
