@@ -13,7 +13,7 @@ describe("Room", () => {
   });
 
   it("should initiate with a name and default parameters", () => {
-    const aRoom = new Room(undefined, "a room");
+    const aRoom = new Room({ room: "a room" });
 
     expect(aRoom).to.have.property("id").which.is.not.null;
     expect(aRoom)
@@ -26,7 +26,7 @@ describe("Room", () => {
   describe("storeParticipants", () => {
     it("should add participants", () => {
       const aRoom = new Room();
-      const aParticipant = new Participant(undefined, "Alice B.");
+      const aParticipant = new Participant({ name: "Alice B." });
 
       aRoom.storeParticipant(aParticipant);
 
@@ -36,10 +36,10 @@ describe("Room", () => {
     it("should make participant admin if first", () => {
       const aRoom = new Room();
 
-      aRoom.storeParticipant(new Participant(undefined, "Alice B."));
+      aRoom.storeParticipant(new Participant({ name: "Alice B." }));
       expect(aRoom.listParticipants()[0]).to.have.property("isAdmin", true);
 
-      aRoom.storeParticipant(new Participant(undefined, "John Doe"));
+      aRoom.storeParticipant(new Participant({ name: "John Doe" }));
       expect(aRoom.listParticipants()[1]).to.have.property("isAdmin", false);
     });
   });
@@ -47,7 +47,7 @@ describe("Room", () => {
   describe("listParticipants", () => {
     it("should not return card properties", () => {
       const aRoom = new Room();
-      const aParticipant = new Participant(undefined, "Alice B.");
+      const aParticipant = new Participant({ name: "Alice B." });
       aRoom.storeParticipant(aParticipant);
       aRoom.storeVote(aParticipant, 10);
 
@@ -58,7 +58,7 @@ describe("Room", () => {
   describe("listParticipantsWithVote", () => {
     it("should return card property", () => {
       const aRoom = new Room();
-      const aParticipant = new Participant(undefined, "Alice B.");
+      const aParticipant = new Participant({ name: "Alice B." });
       aRoom.storeParticipant(aParticipant);
       aRoom.storeVote(aParticipant, 10);
 
@@ -71,8 +71,8 @@ describe("Room", () => {
 
     beforeEach(() => {
       aRoom = new Room();
-      aParticipant1 = new Participant(undefined, "Alice B.");
-      aParticipant2 = new Participant(undefined, "John L.");
+      aParticipant1 = new Participant({ name: "Alice B." });
+      aParticipant2 = new Participant({ name: "John L." });
       aRoom.storeParticipant(aParticipant1);
       aRoom.storeParticipant(aParticipant2);
     });
@@ -101,8 +101,8 @@ describe("Room", () => {
 
     beforeEach(() => {
       aRoom = new Room();
-      aParticipant1 = new Participant(undefined, "Alice B.");
-      aParticipant2 = new Participant(undefined, "John L.");
+      aParticipant1 = new Participant({ name: "Alice B." });
+      aParticipant2 = new Participant({ name: "John L." });
       aRoom.storeParticipant(aParticipant1);
       aRoom.storeParticipant(aParticipant2);
     });
@@ -128,8 +128,8 @@ describe("Room", () => {
 
     beforeEach(() => {
       aRoom = new Room();
-      aParticipant1 = new Participant(undefined, "Alice B.");
-      aParticipant2 = new Participant(undefined, "John L.");
+      aParticipant1 = new Participant({ name: "Alice B." });
+      aParticipant2 = new Participant({ name: "John L." });
       aRoom.storeParticipant(aParticipant1);
       aRoom.storeParticipant(aParticipant2);
     });

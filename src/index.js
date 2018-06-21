@@ -13,14 +13,14 @@ app.use(bodyParser.json());
 io.use((socket, next) => {
   const { room } = socket.handshake.query;
   if (!rooms[room]) {
-    rooms[room] = new Room(undefined, room);
+    rooms[room] = new Room({ room });
   }
   return next();
 });
 
 io.on("connection", socket => {
   const room = rooms[socket.handshake.query.room];
-  const participant = new Participant(undefined, socket.handshake.query.name);
+  const participant = new Participant({ name: socket.handshake.query.name });
 
   socket.join(room, err => {
     if (err) {

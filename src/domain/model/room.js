@@ -1,7 +1,7 @@
 const uuid = require("uuid/v4");
 
 module.exports = class Room {
-  constructor(id = uuid(), room = undefined, participants = [], voteInProgress = false) {
+  constructor({ id = uuid(), room = undefined, participants = [], voteInProgress = false } = {}) {
     this.id = id;
     this.room = room;
     this.participants = participants;
