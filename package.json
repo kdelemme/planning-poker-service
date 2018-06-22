@@ -4,8 +4,8 @@
   "description": "A distributed planning poker game",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js",
-    "start:prod": "node src/index.js",
+    "start": "NODE_ENV=production node src/index.js",
+    "start:dev": "nodemon src/index.js",
     "test": "mocha --recursive",
     "test:watch": "mocha -w --recursive"
   },
