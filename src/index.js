@@ -8,8 +8,9 @@ const Room = require("./domain/model/room");
 const Participant = require("./domain/model/participant");
 
 const InMemoryRoomRepository = require("./infrastructure/persistence/inMemoryRoomRepository");
-const RoomRepository =
+const roomRepository =
   process.env.NODE_ENV === "production" ? new InMemoryRoomRepository() : new InMemoryRoomRepository();
+const createRoom = new (require("./application/service/createRoom"))(roomRepository);
 
 app.use(bodyParser.json());
 app.use(function(req, res, next) {
@@ -19,15 +20,12 @@ app.use(function(req, res, next) {
 });
 
 io.use((socket, next) => {
-  const { room } = socket.handshake.query;
-  if (!RoomRepository.findByRoomName(room)) {
-    RoomRepository.save(new Room({ room }));
-  }
+  createRoom.execute(socket.handshake.query.room);
   return next();
 });
 
 io.on("connection", socket => {
-  const room = RoomRepository.findByRoomName(socket.handshake.query.room);
+  const room = roomRepository.findByRoomName(socket.handshake.query.room);
   const participant = new Participant({ name: socket.handshake.query.name });
 
   socket.join(room, err => {
