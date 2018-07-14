@@ -8,7 +8,7 @@ describe("createRoom", () => {
 
   beforeEach(() => {
     roomRepository = new InMemoryRoomRepository();
-    createRoom = new CreateRoom(roomRepository);
+    createRoom = new CreateRoom({ roomRepository });
   });
 
   it("should save the room if not find", () => {
