@@ -6,10 +6,9 @@ const uuid = require("uuid/v4");
 
 const { Room, Participant } = require("../domain/model");
 
-const InMemoryRoomRepository = require("../infrastructure/persistence/inMemoryRoomRepository");
-const roomRepository =
-  process.env.NODE_ENV === "production" ? new InMemoryRoomRepository() : new InMemoryRoomRepository();
-const createRoom = new (require("../application/service/createRoom"))(roomRepository);
+const container = require("../configureContainer")();
+const createRoom = container.resolve("createRoom");
+const roomRepository = container.resolve("roomRepository");
 
 app.use(bodyParser.json());
 app.use(function(req, res, next) {

@@ -1,7 +1,7 @@
 const Room = require("../../domain/model/room");
 
 module.exports = class CreateRoom {
-  constructor(roomRepository) {
+  constructor({ roomRepository } = {}) {
     this.roomRepository = roomRepository;
   }
 
