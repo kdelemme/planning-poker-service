@@ -4,7 +4,7 @@ const Participant = require("../../../src/domain/model/participant");
 const InMemoryRoomRepository = require("../../../src/infrastructure/persistence/inMemoryRoomRepository");
 const StartVote = require("../../../src/application/service/start-vote");
 
-describe("createRoom", () => {
+describe("startVote", () => {
   let startVote, roomRepository;
 
   beforeEach(() => {
