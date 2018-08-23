@@ -18,14 +18,14 @@ app.use(function(req, res, next) {
   next();
 });
 
-io.use((socket, next) => {
-  createRoom.execute(socket.handshake.query.room);
+io.use(async (socket, next) => {
+  await createRoom.execute(socket.handshake.query.room);
   return next();
 });
 
-io.on("connection", socket => {
+io.on("connection", async socket => {
   const roomName = socket.handshake.query.room;
-  const room = roomRepository.findByRoomName(socket.handshake.query.room);
+  const room = await roomRepository.findByRoomName(socket.handshake.query.room);
   const participant = new Participant({ name: socket.handshake.query.name });
 
   socket.join(room, err => {

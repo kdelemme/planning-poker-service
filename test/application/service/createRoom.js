@@ -11,8 +11,8 @@ describe("createRoom", () => {
     createRoom = new CreateRoom({ roomRepository });
   });
 
-  it("should save the room if not find", () => {
-    createRoom.execute("a room");
+  it("should save the room if not find", async () => {
+    await createRoom.execute("a room");
     expect(roomRepository.findByRoomName("a room")).to.be.an.instanceOf(Room);
   });
 });
