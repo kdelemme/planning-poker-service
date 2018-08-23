@@ -5,9 +5,12 @@ module.exports = class CreateRoom {
     this.roomRepository = roomRepository;
   }
 
-  execute(roomName) {
-    if (!this.roomRepository.findByRoomName(roomName)) {
-      this.roomRepository.save(new Room({ room: roomName }));
+  async execute(roomName) {
+    const existingRoom = await this.roomRepository.findByRoomName(roomName);
+    if (existingRoom == null) {
+      return await this.roomRepository.save(new Room({ room: roomName }));
     }
+
+    return existingRoom;
   }
 };
