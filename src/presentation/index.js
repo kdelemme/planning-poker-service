@@ -9,6 +9,7 @@ const { Room, Participant } = require("../domain/model");
 const container = require("../configureContainer")();
 const createRoom = container.resolve("createRoom");
 const startVote = container.resolve("startVote");
+const storeVote = container.resolve("storeVote");
 const roomRepository = container.resolve("roomRepository");
 
 app.use(bodyParser.json());
@@ -54,13 +55,19 @@ io.on("connection", async socket => {
     }
   });
 
-  socket.on("VOTE_CARD", data => {
-    room.storeVote(participant, data.value);
-    io.to(room).emit("PARTICIPANTS", room.listParticipants());
+  socket.on("VOTE_CARD", async data => {
+    const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute(
+      roomName,
+      participant,
+      data.value
+    );
 
-    if (room.allParticipantsHaveVoted()) {
-      io.to(room).emit("PARTICIPANTS_WITH_VOTE", room.listParticipantsWithVote());
-      room.completeVote();
+    if (participants != null) {
+      io.to(room).emit("PARTICIPANTS", participants);
+
+      if (allParticipantsHaveVoted) {
+        io.to(room).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
+      }
     }
   });
 
