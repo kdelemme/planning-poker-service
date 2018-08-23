@@ -6,8 +6,11 @@ module.exports = class CreateRoom {
   }
 
   execute(roomName) {
-    if (!this.roomRepository.findByRoomName(roomName)) {
-      this.roomRepository.save(new Room({ room: roomName }));
+    const existingRoom = this.roomRepository.findByRoomName(roomName);
+    if (existingRoom == null) {
+      return this.roomRepository.save(new Room({ room: roomName }));
     }
+
+    return existingRoom;
   }
 };

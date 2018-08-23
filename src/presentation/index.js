@@ -8,6 +8,7 @@ const { Room, Participant } = require("../domain/model");
 
 const container = require("../configureContainer")();
 const createRoom = container.resolve("createRoom");
+const startVote = container.resolve("startVote");
 const roomRepository = container.resolve("roomRepository");
 
 app.use(bodyParser.json());
@@ -23,6 +24,7 @@ io.use((socket, next) => {
 });
 
 io.on("connection", socket => {
+  const roomName = socket.handshake.query.room;
   const room = roomRepository.findByRoomName(socket.handshake.query.room);
   const participant = new Participant({ name: socket.handshake.query.name });
 
@@ -62,9 +64,10 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("START_VOTE", data => {
-    if (room.startVote(participant)) {
-      io.to(room).emit("PARTICIPANTS", room.listParticipants());
+  socket.on("START_VOTE", async data => {
+    const { voteStarted, participants } = await startVote.execute(roomName, participant);
+    if (voteStarted) {
+      io.to(room).emit("PARTICIPANTS", participants);
       io.to(room).emit("VOTE_STARTED");
     }
   });
