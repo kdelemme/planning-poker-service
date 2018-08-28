@@ -43,11 +43,11 @@ describe("startVote", () => {
   describe("when a room does not exist", () => {
     let room, participant;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       room = new Room({ room: "a room" });
       participant = new Participant({ name: "John", isAdmin: false });
       room.storeParticipant(participant);
-      roomRepository.save(room);
+      await roomRepository.save(room);
     });
 
     it("should not start the vote", async () => {

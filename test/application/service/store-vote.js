@@ -15,11 +15,11 @@ describe("storeVote", () => {
   describe("when a room exists", () => {
     let room, participant;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       room = new Room({ room: "a room" });
       participant = new Participant({ name: "Alice" });
       room.storeParticipant(participant);
-      roomRepository.save(room);
+      await roomRepository.save(room);
     });
 
     it("should return the participants with vote if everyone has voted", async () => {

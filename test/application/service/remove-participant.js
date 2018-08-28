@@ -15,13 +15,13 @@ describe("removeParticipant", () => {
   describe("when a room exists", () => {
     let room, participant, anotherParticipant;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       room = new Room({ room: "a room" });
       participant = new Participant({ name: "Alice" });
       anotherParticipant = new Participant({ name: "Bob" });
       room.storeParticipant(participant);
       room.storeParticipant(anotherParticipant);
-      roomRepository.save(room);
+      await roomRepository.save(room);
     });
 
     it("should remove the participant from the list", async () => {
