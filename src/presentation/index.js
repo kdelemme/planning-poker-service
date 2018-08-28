@@ -2,16 +2,15 @@ const app = require("express")();
 const bodyParser = require("body-parser");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-const uuid = require("uuid/v4");
 
-const { Room, Participant } = require("../domain/model");
+const { Participant } = require("../domain/model");
 
 const container = require("../configureContainer")();
 const createRoom = container.resolve("createRoom");
 const startVote = container.resolve("startVote");
 const storeVote = container.resolve("storeVote");
 const removeParticipant = container.resolve("removeParticipant");
-const roomRepository = container.resolve("roomRepository");
+const storeParticipant = container.resolve("storeParticipant");
 
 app.use(bodyParser.json());
 app.use(function(req, res, next) {
@@ -27,18 +26,17 @@ io.use(async (socket, next) => {
 
 io.on("connection", async socket => {
   const roomName = socket.handshake.query.room;
-  const room = await roomRepository.findByRoomName(socket.handshake.query.room);
   const participant = new Participant({ name: socket.handshake.query.name });
 
-  socket.join(room, async err => {
+  socket.join(roomName, async err => {
     if (err) {
-      console.error(`${socket.id} failed to join ${room}`);
+      console.error(`${socket.id} failed to join ${roomName}`);
     }
 
     const { participants, voteInProgress } = await storeParticipant.execute(roomName, participant);
 
     socket.emit("ON_CONNECT", { participantId: participant.id });
-    io.to(room).emit("PARTICIPANTS", participants);
+    io.to(roomName).emit("PARTICIPANTS", participants);
 
     if (voteInProgress) {
       socket.emit("VOTE_STARTED");
@@ -52,10 +50,10 @@ io.on("connection", async socket => {
     );
 
     if (participants != null) {
-      io.to(room).emit("PARTICIPANTS", room.listParticipants());
+      io.to(roomName).emit("PARTICIPANTS", room.listParticipants());
 
       if (allParticipantsHaveVoted) {
-        io.to(room).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
+        io.to(roomName).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
       }
     }
   });
@@ -68,10 +66,10 @@ io.on("connection", async socket => {
     );
 
     if (participants != null) {
-      io.to(room).emit("PARTICIPANTS", participants);
+      io.to(roomName).emit("PARTICIPANTS", participants);
 
       if (allParticipantsHaveVoted) {
-        io.to(room).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
+        io.to(roomName).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
       }
     }
   });
@@ -79,8 +77,8 @@ io.on("connection", async socket => {
   socket.on("START_VOTE", async data => {
     const { voteStarted, participants } = await startVote.execute(roomName, participant);
     if (voteStarted) {
-      io.to(room).emit("PARTICIPANTS", participants);
-      io.to(room).emit("VOTE_STARTED");
+      io.to(roomName).emit("PARTICIPANTS", participants);
+      io.to(roomName).emit("VOTE_STARTED");
     }
   });
 });
