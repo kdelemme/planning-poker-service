@@ -10,6 +10,7 @@ const container = require("../configureContainer")();
 const createRoom = container.resolve("createRoom");
 const startVote = container.resolve("startVote");
 const storeVote = container.resolve("storeVote");
+const removeParticipant = container.resolve("removeParticipant");
 const roomRepository = container.resolve("roomRepository");
 
 app.use(bodyParser.json());
@@ -45,13 +46,14 @@ io.on("connection", async socket => {
   });
 
   socket.on("disconnecting", () => {
-    room.removeParticipant(participant);
+    const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(roomName, participant);
 
-    io.to(room).emit("PARTICIPANTS", room.listParticipants());
+    if (participants != null) {
+      io.to(room).emit("PARTICIPANTS", room.listParticipants());
 
-    if (room.allParticipantsHaveVoted()) {
-      io.to(room).emit("PARTICIPANTS_WITH_VOTE", room.listParticipantsWithVote());
-      room.completeVote();
+      if (allParticipantsHaveVoted) {
+        io.to(room).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);  
+      }
     }
   });
 

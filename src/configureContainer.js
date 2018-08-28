@@ -3,6 +3,7 @@ const InMemoryRoomRepository = require("./infrastructure/persistence/inMemoryRoo
 const CreateRoom = require("./application/service/createRoom");
 const StartVote = require("./application/service/start-vote");
 const StoreVote = require("./application/service/store-vote");
+const RemoveParticipant = require("./application/service/remove-participant");
 
 module.exports = function configureContainer() {
   const container = createContainer();
@@ -13,7 +14,8 @@ module.exports = function configureContainer() {
         : asClass(InMemoryRoomRepository).singleton(),
     createRoom: asClass(CreateRoom).singleton(),
     startVote: asClass(StartVote).singleton(),
-    storeVote: asClass(StoreVote).singleton()
+    storeVote: asClass(StoreVote).singleton(),
+    removeParticipant: asClass(RemoveParticipant).singleton()
   });
 
   return container;
