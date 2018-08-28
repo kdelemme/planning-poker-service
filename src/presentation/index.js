@@ -30,29 +30,32 @@ io.on("connection", async socket => {
   const room = await roomRepository.findByRoomName(socket.handshake.query.room);
   const participant = new Participant({ name: socket.handshake.query.name });
 
-  socket.join(room, err => {
+  socket.join(room, async err => {
     if (err) {
       console.error(`${socket.id} failed to join ${room}`);
     }
 
-    room.storeParticipant(participant);
+    const { participants, voteInProgress } = await storeParticipant.execute(roomName, participant);
 
     socket.emit("ON_CONNECT", { participantId: participant.id });
-    io.to(room).emit("PARTICIPANTS", room.listParticipants());
+    io.to(room).emit("PARTICIPANTS", participants);
 
-    if (room.voteInProgress) {
+    if (voteInProgress) {
       socket.emit("VOTE_STARTED");
     }
   });
 
-  socket.on("disconnecting", () => {
-    const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(roomName, participant);
+  socket.on("disconnecting", async () => {
+    const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
+      roomName,
+      participant
+    );
 
     if (participants != null) {
       io.to(room).emit("PARTICIPANTS", room.listParticipants());
 
       if (allParticipantsHaveVoted) {
-        io.to(room).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);  
+        io.to(room).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
       }
     }
   });
