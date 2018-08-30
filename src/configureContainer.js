@@ -1,6 +1,6 @@
 const { createContainer, asClass } = require("awilix");
 const InMemoryRoomRepository = require("./infrastructure/persistence/inMemoryRoomRepository");
-const CreateRoom = require("./application/service/createRoom");
+const CreateRoom = require("./application/service/create-room");
 const StartVote = require("./application/service/start-vote");
 const StoreVote = require("./application/service/store-vote");
 const RemoveParticipant = require("./application/service/remove-participant");

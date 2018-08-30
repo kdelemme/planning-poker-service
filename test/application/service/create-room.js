@@ -1,7 +1,7 @@
 const expect = require("chai").expect;
 const Room = require("../../../src/domain/model/room");
 const InMemoryRoomRepository = require("../../../src/infrastructure/persistence/inMemoryRoomRepository");
-const CreateRoom = require("../../../src/application/service/createRoom");
+const CreateRoom = require("../../../src/application/service/create-room");
 
 describe("createRoom", () => {
   let createRoom, roomRepository;
