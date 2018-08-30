@@ -2,6 +2,7 @@ const app = require("express")();
 const bodyParser = require("body-parser");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
+const uuid = require("uuid/v4");
 
 const container = require("../configureContainer")();
 const createRoom = container.resolve("createRoom");
@@ -24,6 +25,7 @@ io.use(async (socket, next) => {
 
 io.on("connection", async socket => {
   const roomName = socket.handshake.query.room;
+  const participantId = uuid();
   const participantName = socket.handshake.query.name;
 
   socket.join(roomName, async err => {
@@ -31,7 +33,11 @@ io.on("connection", async socket => {
       console.error(`${socket.id} failed to join ${roomName}`);
     }
 
-    const { participant, participants, voteInProgress } = await storeParticipant.execute(roomName, participantName);
+    const { participant, participants, voteInProgress } = await storeParticipant.execute({
+      roomName,
+      participantId,
+      participantName
+    });
 
     socket.emit("ON_CONNECT", { participantId: participant.id });
     io.to(roomName).emit("PARTICIPANTS", participants);
