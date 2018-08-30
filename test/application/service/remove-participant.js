@@ -1,7 +1,7 @@
 const expect = require("chai").expect;
 const Room = require("../../../src/domain/model/room");
 const Participant = require("../../../src/domain/model/participant");
-const InMemoryRoomRepository = require("../../../src/infrastructure/persistence/inMemoryRoomRepository");
+const InMemoryRoomRepository = require("../../../src/infrastructure/persistence/in-memory-room-repository");
 const RemoveParticipant = require("../../../src/application/service/remove-participant");
 
 describe("removeParticipant", () => {
@@ -25,10 +25,10 @@ describe("removeParticipant", () => {
     });
 
     it("should remove the participant from the list", async () => {
-      const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
-        "a room",
-        participant.name
-      );
+      const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute({
+        roomName: "a room",
+        participantId: participant.id
+      });
 
       expect(allParticipantsHaveVoted).to.be.false;
       expect(participants[0].id).to.eq(anotherParticipant.id);
@@ -39,10 +39,10 @@ describe("removeParticipant", () => {
       room.storeVote(anotherParticipant, "5");
       await roomRepository.save(room);
 
-      const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
-        "a room",
-        participant.name
-      );
+      const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute({
+        roomName: "a room",
+        participantId: participant.id
+      });
 
       expect(allParticipantsHaveVoted).to.be.true;
       expect(participants[0].id).to.eq(anotherParticipant.id);

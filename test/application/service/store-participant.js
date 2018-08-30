@@ -1,7 +1,8 @@
 const expect = require("chai").expect;
+const uuid = require("uuid/v4");
 const Room = require("../../../src/domain/model/room");
 const Participant = require("../../../src/domain/model/participant");
-const InMemoryRoomRepository = require("../../../src/infrastructure/persistence/inMemoryRoomRepository");
+const InMemoryRoomRepository = require("../../../src/infrastructure/persistence/in-memory-room-repository");
 const StoreParticipant = require("../../../src/application/service/store-participant");
 
 describe("storeParticipant", () => {
@@ -23,9 +24,15 @@ describe("storeParticipant", () => {
     });
 
     it("should store the participant into the room", async () => {
-      const { participants, voteInProgress } = await storeParticipant.execute("a room", "Laura");
+      const participantId = uuid();
+      const { participants, voteInProgress } = await storeParticipant.execute({
+        roomName: "a room",
+        participantId,
+        participantName: "Laura"
+      });
 
       expect(voteInProgress).to.be.false;
+      expect(participants[1].id).to.eq(participantId);
       expect(participants[1].name).to.eq("Laura");
     });
 
@@ -33,10 +40,16 @@ describe("storeParticipant", () => {
       room.startVote(participant);
       await roomRepository.save(room);
 
-      const { participants, voteInProgress } = await storeParticipant.execute("a room", "John");
+      const participantId = uuid();
+      const { participants, voteInProgress } = await storeParticipant.execute({
+        roomName: "a room",
+        participantId,
+        participantName: "Laura"
+      });
 
       expect(voteInProgress).to.be.true;
-      expect(participants[1].name).to.eq("John");
+      expect(participants[1].id).to.eq(participantId);
+      expect(participants[1].name).to.eq("Laura");
     });
   });
 });

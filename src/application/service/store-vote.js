@@ -3,11 +3,11 @@ module.exports = class StartVote {
     this.roomRepository = roomRepository;
   }
 
-  async execute(roomName, participantName, vote) {
+  async execute({ roomName, participantId, vote }) {
     const room = await this.roomRepository.findByRoomName(roomName);
 
     if (room != null) {
-      const participant = room.participantByName(participantName);
+      const participant = room.findParticipantById(participantId);
       room.storeVote(participant, vote);
 
       const allParticipantsHaveVoted = room.allParticipantsHaveVoted();

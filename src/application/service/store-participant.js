@@ -5,10 +5,10 @@ module.exports = class StoreParticipant {
     this.roomRepository = roomRepository;
   }
 
-  async execute(roomName, participantName) {
+  async execute({ roomName, participantId, participantName }) {
     const room = await this.roomRepository.findByRoomName(roomName);
     if (room != null) {
-      const participant = new Participant({ name: participantName });
+      const participant = new Participant({ id: participantId, name: participantName });
       room.storeParticipant(participant);
       await this.roomRepository.save(room);
 
