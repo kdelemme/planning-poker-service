@@ -23,11 +23,11 @@ describe("storeVote", () => {
     });
 
     it("should return the participants with vote if everyone has voted", async () => {
-      const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute(
-        "a room",
-        participant.name,
-        "3"
-      );
+      const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute({
+        roomName: "a room",
+        participantId: participant.id,
+        card: "3"
+      });
 
       expect(allParticipantsHaveVoted).to.be.true;
       expect(participants[0].id).to.eq(participant.id);

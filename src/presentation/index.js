@@ -63,11 +63,11 @@ io.on("connection", async socket => {
   });
 
   socket.on("VOTE_CARD", async ({ card }) => {
-    const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute(
+    const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute({
       roomName,
-      participantName,
+      participantId,
       card
-    );
+    });
 
     if (participants != null) {
       io.to(roomName).emit("PARTICIPANTS", participants);
