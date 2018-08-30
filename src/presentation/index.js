@@ -48,10 +48,10 @@ io.on("connection", async socket => {
   });
 
   socket.on("disconnecting", async () => {
-    const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
+    const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute({
       roomName,
-      participantName
-    );
+      participantId
+    });
 
     if (participants != null) {
       io.to(roomName).emit("PARTICIPANTS", participants);

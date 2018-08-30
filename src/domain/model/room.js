@@ -15,6 +15,10 @@ module.exports = class Room {
     }
   }
 
+  findParticipantById(id) {
+    return this.participants.find(participant => participant.id === id);
+  }
+
   participantByName(name) {
     return this.participants.find(participant => participant.name === name);
   }
