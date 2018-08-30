@@ -25,7 +25,7 @@ describe("startVote", () => {
     });
 
     it("should start the vote and return the participants if the participant is admin", async () => {
-      const { voteStarted, participants } = await startVote.execute("a room", admin);
+      const { voteStarted, participants } = await startVote.execute("a room", admin.name);
 
       expect(voteStarted).to.be.true;
       expect(participants[0].id).to.eq(admin.id);
@@ -33,7 +33,7 @@ describe("startVote", () => {
     });
 
     it("should not start the vote if the participant is not admin", async () => {
-      const { voteStarted, participants } = await startVote.execute("a room", participant);
+      const { voteStarted, participants } = await startVote.execute("a room", participant.name);
 
       expect(voteStarted).to.be.false;
       expect(participants).to.be.undefined;
@@ -51,7 +51,7 @@ describe("startVote", () => {
     });
 
     it("should not start the vote", async () => {
-      const { voteStarted, participants } = await startVote.execute("some inexistant room", participant);
+      const { voteStarted, participants } = await startVote.execute("some inexistant room", participant.name);
 
       expect(voteStarted).to.be.false;
       expect(participants).to.be.undefined;

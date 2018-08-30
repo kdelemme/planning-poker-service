@@ -1,15 +1,16 @@
-const Room = require("../../domain/model/room");
-
 module.exports = class StartVote {
   constructor({ roomRepository } = {}) {
     this.roomRepository = roomRepository;
   }
 
-  async execute(roomName, participant) {
+  async execute(roomName, participantName) {
     const room = await this.roomRepository.findByRoomName(roomName);
-    if (room != null && room.startVote(participant)) {
-      await this.roomRepository.save(room);
-      return { participants: room.listParticipants(), voteStarted: true };
+    if (room != null) {
+      const participant = room.participantByName(participantName);
+      if (room.startVote(participant)) {
+        await this.roomRepository.save(room);
+        return { participants: room.listParticipants(), voteStarted: true };
+      }
     }
 
     return { voteStarted: false };

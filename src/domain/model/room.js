@@ -15,6 +15,10 @@ module.exports = class Room {
     }
   }
 
+  participantByName(name) {
+    return this.participants.find(participant => participant.name === name);
+  }
+
   listParticipants() {
     return this.participants.map(({ id, name, isAdmin, hasVoted }) => {
       return { id, name, isAdmin, hasVoted };

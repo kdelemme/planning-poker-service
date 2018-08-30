@@ -3,8 +3,6 @@ const bodyParser = require("body-parser");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
-const { Participant } = require("../domain/model");
-
 const container = require("../configureContainer")();
 const createRoom = container.resolve("createRoom");
 const startVote = container.resolve("startVote");
@@ -26,14 +24,14 @@ io.use(async (socket, next) => {
 
 io.on("connection", async socket => {
   const roomName = socket.handshake.query.room;
-  const participant = new Participant({ name: socket.handshake.query.name });
+  const participantName = socket.handshake.query.name;
 
   socket.join(roomName, async err => {
     if (err) {
       console.error(`${socket.id} failed to join ${roomName}`);
     }
 
-    const { participants, voteInProgress } = await storeParticipant.execute(roomName, participant);
+    const { participant, participants, voteInProgress } = await storeParticipant.execute(roomName, participantName);
 
     socket.emit("ON_CONNECT", { participantId: participant.id });
     io.to(roomName).emit("PARTICIPANTS", participants);
@@ -46,11 +44,11 @@ io.on("connection", async socket => {
   socket.on("disconnecting", async () => {
     const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
       roomName,
-      participant
+      participantName
     );
 
     if (participants != null) {
-      io.to(roomName).emit("PARTICIPANTS", room.listParticipants());
+      io.to(roomName).emit("PARTICIPANTS", participants);
 
       if (allParticipantsHaveVoted) {
         io.to(roomName).emit("PARTICIPANTS_WITH_VOTE", participantsWithVote);
@@ -61,7 +59,7 @@ io.on("connection", async socket => {
   socket.on("VOTE_CARD", async data => {
     const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute(
       roomName,
-      participant,
+      participantName,
       data.value
     );
 
@@ -74,8 +72,8 @@ io.on("connection", async socket => {
     }
   });
 
-  socket.on("START_VOTE", async data => {
-    const { voteStarted, participants } = await startVote.execute(roomName, participant);
+  socket.on("START_VOTE", async () => {
+    const { voteStarted, participants } = await startVote.execute(roomName, participantName);
     if (voteStarted) {
       io.to(roomName).emit("PARTICIPANTS", participants);
       io.to(roomName).emit("VOTE_STARTED");

@@ -25,7 +25,7 @@ describe("storeVote", () => {
     it("should return the participants with vote if everyone has voted", async () => {
       const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute(
         "a room",
-        participant,
+        participant.name,
         "3"
       );
 
