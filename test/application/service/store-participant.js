@@ -23,22 +23,20 @@ describe("storeParticipant", () => {
     });
 
     it("should store the participant into the room", async () => {
-      const anotherParticipant = new Participant({ name: "Laura" });
-      const { participants, voteInProgress } = await storeParticipant.execute("a room", anotherParticipant);
+      const { participants, voteInProgress } = await storeParticipant.execute("a room", "Laura");
 
       expect(voteInProgress).to.be.false;
-      expect(participants[1].id).to.eq(anotherParticipant.id);
+      expect(participants[1].name).to.eq("Laura");
     });
 
     it("should return the status on the current vote", async () => {
       room.startVote(participant);
       await roomRepository.save(room);
 
-      const anotherParticipant = new Participant({ name: "John" });
-      const { participants, voteInProgress } = await storeParticipant.execute("a room", anotherParticipant);
+      const { participants, voteInProgress } = await storeParticipant.execute("a room", "John");
 
       expect(voteInProgress).to.be.true;
-      expect(participants[1].id).to.eq(anotherParticipant.id);
+      expect(participants[1].name).to.eq("John");
     });
   });
 });

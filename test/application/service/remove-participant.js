@@ -27,7 +27,7 @@ describe("removeParticipant", () => {
     it("should remove the participant from the list", async () => {
       const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
         "a room",
-        participant
+        participant.name
       );
 
       expect(allParticipantsHaveVoted).to.be.false;
@@ -41,7 +41,7 @@ describe("removeParticipant", () => {
 
       const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute(
         "a room",
-        participant
+        participant.name
       );
 
       expect(allParticipantsHaveVoted).to.be.true;
