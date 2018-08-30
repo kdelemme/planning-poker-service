@@ -79,7 +79,7 @@ io.on("connection", async socket => {
   });
 
   socket.on("START_VOTE", async () => {
-    const { voteStarted, participants } = await startVote.execute(roomName, participantName);
+    const { voteStarted, participants } = await startVote.execute({ roomName, participantId });
     if (voteStarted) {
       io.to(roomName).emit("PARTICIPANTS", participants);
       io.to(roomName).emit("VOTE_STARTED");
