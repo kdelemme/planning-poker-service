@@ -56,11 +56,11 @@ io.on("connection", async socket => {
     }
   });
 
-  socket.on("VOTE_CARD", async data => {
+  socket.on("VOTE_CARD", async ({ card }) => {
     const { participants, allParticipantsHaveVoted, participantsWithVote } = await storeVote.execute(
       roomName,
       participantName,
-      data.value
+      card
     );
 
     if (participants != null) {
