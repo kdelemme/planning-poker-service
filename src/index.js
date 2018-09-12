@@ -1,3 +1,3 @@
-const container = require("./configureContainer")();
-
-require("./presentation");
+require("./configureContainer")().then(container => {
+  require("./presentation")({ container });
+});

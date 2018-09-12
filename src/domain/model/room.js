@@ -1,9 +1,9 @@
 const uuid = require("uuid/v4");
 
 module.exports = class Room {
-  constructor({ id = uuid(), room = undefined, participants = [], voteInProgress = false } = {}) {
+  constructor({ id = uuid(), name = undefined, participants = [], voteInProgress = false } = {}) {
     this.id = id;
-    this.room = room;
+    this.name = name;
     this.participants = participants;
     this.voteInProgress = voteInProgress;
   }
@@ -13,14 +13,6 @@ module.exports = class Room {
     if (this.participants.length === 1) {
       this.participants[0].markAsAdmin();
     }
-  }
-
-  findParticipantById(id) {
-    return this.participants.find(participant => participant.id === id);
-  }
-
-  participantByName(name) {
-    return this.participants.find(participant => participant.name === name);
   }
 
   listParticipants() {
@@ -33,8 +25,8 @@ module.exports = class Room {
     return this.participants;
   }
 
-  removeParticipant(participant) {
-    this.participants = this.participants.filter(p => p.id !== participant.id);
+  removeParticipant(participantId) {
+    this.participants = this.participants.filter(p => p.id !== participantId);
 
     let adminStillConnected = this.participants.find(p => p.isAdmin);
     if (!adminStillConnected && this.participants.length > 0) {
@@ -42,12 +34,8 @@ module.exports = class Room {
     }
   }
 
-  numberOfParticipants() {
-    return rooms[room].participants.length;
-  }
-
-  startVote(participant) {
-    if (!this.isAdmin(participant.id)) {
+  startVote(participantId) {
+    if (!this.isAdmin(participantId)) {
       return false;
     }
     this.voteInProgress = true;
@@ -56,13 +44,15 @@ module.exports = class Room {
     return true;
   }
 
-  storeVote(participant, card) {
-    let voter = this.participants.find(p => p.id === participant.id);
+  storeVote(participantId, card) {
+    let voter = this.participants.find(p => p.id === participantId);
     voter.vote(card);
   }
 
   completeVote() {
-    this.voteInProgress = false;
+    if (this.allParticipantsHaveVoted()) {
+      this.voteInProgress = false;
+    }
   }
 
   allParticipantsHaveVoted() {

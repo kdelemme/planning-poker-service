@@ -4,7 +4,7 @@ module.exports = class InMemoryRoomRepository {
   }
 
   findByRoomName(roomName) {
-    return this.rooms.find(r => r.room === roomName);
+    return this.rooms.find(r => r.name === roomName);
   }
 
   save(room) {

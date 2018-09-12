@@ -16,7 +16,7 @@ describe("removeParticipant", () => {
     let room, participant, anotherParticipant;
 
     beforeEach(async () => {
-      room = new Room({ room: "a room" });
+      room = new Room({ name: "a room" });
       participant = new Participant({ name: "Alice" });
       anotherParticipant = new Participant({ name: "Bob" });
       room.storeParticipant(participant);
@@ -36,7 +36,7 @@ describe("removeParticipant", () => {
     });
 
     it("should return that all participants have voted after removing the participant", async () => {
-      room.storeVote(anotherParticipant, "5");
+      room.storeVote(anotherParticipant.id, "5");
       await roomRepository.save(room);
 
       const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute({

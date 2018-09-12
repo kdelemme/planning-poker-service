@@ -3,23 +3,22 @@ module.exports = class StartVote {
     this.roomRepository = roomRepository;
   }
 
-  async execute({ roomName, participantId, vote }) {
+  async execute({ roomName, participantId, card }) {
     const room = await this.roomRepository.findByRoomName(roomName);
 
     if (room != null) {
-      const participant = room.findParticipantById(participantId);
-      room.storeVote(participant, vote);
+      room.storeVote(participantId, card);
 
       const allParticipantsHaveVoted = room.allParticipantsHaveVoted();
       if (allParticipantsHaveVoted) {
         room.completeVote();
       }
 
-      await this.roomRepository.save(room);
+      const updated = await this.roomRepository.save(room);
       return {
-        participants: room.listParticipants(),
+        participants: updated.listParticipants(),
         allParticipantsHaveVoted,
-        participantsWithVote: room.listParticipantsWithVote()
+        participantsWithVote: updated.listParticipantsWithVote()
       };
     }
   }

@@ -16,7 +16,7 @@ describe("storeVote", () => {
     let room, participant;
 
     beforeEach(async () => {
-      room = new Room({ room: "a room" });
+      room = new Room({ name: "a room" });
       participant = new Participant({ name: "Alice" });
       room.storeParticipant(participant);
       await roomRepository.save(room);

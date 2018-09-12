@@ -7,17 +7,17 @@ describe("Room", () => {
     const aRoom = new Room();
 
     expect(aRoom).to.have.property("id").which.is.not.null;
-    expect(aRoom).to.have.property("room").which.is.undefined;
+    expect(aRoom).to.have.property("name").which.is.undefined;
     expect(aRoom).to.have.property("participants").which.is.empty;
     expect(aRoom).to.have.property("voteInProgress").which.is.false;
   });
 
   it("should initiate with a name and default parameters", () => {
-    const aRoom = new Room({ room: "a room" });
+    const aRoom = new Room({ name: "a room" });
 
     expect(aRoom).to.have.property("id").which.is.not.null;
     expect(aRoom)
-      .to.have.property("room")
+      .to.have.property("name")
       .which.is.eq("a room");
     expect(aRoom).to.have.property("participants").which.is.empty;
     expect(aRoom).to.have.property("voteInProgress").which.is.false;
@@ -49,7 +49,7 @@ describe("Room", () => {
       const aRoom = new Room();
       const aParticipant = new Participant({ name: "Alice B." });
       aRoom.storeParticipant(aParticipant);
-      aRoom.storeVote(aParticipant, 10);
+      aRoom.storeVote(aParticipant.id, 10);
 
       expect(aRoom.listParticipants()[0]).to.not.have.property("card");
     });
@@ -60,7 +60,7 @@ describe("Room", () => {
       const aRoom = new Room();
       const aParticipant = new Participant({ name: "Alice B." });
       aRoom.storeParticipant(aParticipant);
-      aRoom.storeVote(aParticipant, 10);
+      aRoom.storeVote(aParticipant.id, 10);
 
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("card");
     });
@@ -80,7 +80,7 @@ describe("Room", () => {
     it("should remove participant from participants list", () => {
       expect(aRoom.listParticipants()).to.have.lengthOf(2);
 
-      aRoom.removeParticipant(aParticipant1);
+      aRoom.removeParticipant(aParticipant1.id);
 
       expect(aRoom.listParticipants()).to.have.lengthOf(1);
       expect(aRoom.listParticipants()[0]).to.have.property("id", aParticipant2.id);
@@ -90,7 +90,7 @@ describe("Room", () => {
       expect(aParticipant1.isAdmin).to.be.true;
       expect(aParticipant2.isAdmin).to.be.false;
 
-      aRoom.removeParticipant(aParticipant1);
+      aRoom.removeParticipant(aParticipant1.id);
 
       expect(aRoom.isAdmin(aParticipant2.id)).to.be.true;
     });
@@ -108,18 +108,51 @@ describe("Room", () => {
     });
 
     it("should allow only admin to start a vote", () => {
-      expect(aRoom.startVote(aParticipant1)).to.be.true;
-      expect(aRoom.startVote(aParticipant2)).to.be.false;
+      expect(aRoom.startVote(aParticipant1.id)).to.be.true;
+      expect(aRoom.startVote(aParticipant2.id)).to.be.false;
     });
 
     it("should mark vote in progress and clear all participant votes", () => {
-      aRoom.startVote(aParticipant1);
+      aRoom.startVote(aParticipant1.id);
 
       expect(aRoom.voteInProgress).to.be.true;
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("hasVoted", false);
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("card", null);
       expect(aRoom.listParticipantsWithVote()[1]).to.have.property("hasVoted", false);
       expect(aRoom.listParticipantsWithVote()[1]).to.have.property("card", null);
+    });
+  });
+
+  describe("completeVote", () => {
+    let aRoom, aParticipant1, aParticipant2;
+
+    beforeEach(() => {
+      aRoom = new Room();
+      aParticipant1 = new Participant({ name: "Alice B." });
+      aParticipant2 = new Participant({ name: "John L." });
+      aRoom.storeParticipant(aParticipant1);
+      aRoom.storeParticipant(aParticipant2);
+    });
+
+    it("should not complete vote when some participants havent voted yet", () => {
+      aRoom.startVote(aParticipant1.id);
+      aRoom.storeVote(aParticipant1.id, "5");
+
+      aRoom.completeVote();
+
+      expect(aRoom.allParticipantsHaveVoted()).to.be.false;
+      expect(aRoom.voteInProgress).to.be.true;
+    });
+
+    it("should complete vote when all participants have voted", () => {
+      aRoom.startVote(aParticipant1.id);
+      aRoom.storeVote(aParticipant1.id, "5");
+      aRoom.storeVote(aParticipant2.id, "3");
+
+      aRoom.completeVote();
+
+      expect(aRoom.allParticipantsHaveVoted()).to.be.true;
+      expect(aRoom.voteInProgress).to.be.false;
     });
   });
 
@@ -135,19 +168,19 @@ describe("Room", () => {
     });
 
     it("should mark the participant hasVoted", () => {
-      aRoom.storeVote(aParticipant1, 3);
+      aRoom.storeVote(aParticipant1.id, 3);
 
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("card", 3);
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("hasVoted", true);
     });
 
     it("should update the participant card", () => {
-      aRoom.storeVote(aParticipant1, 3);
+      aRoom.storeVote(aParticipant1.id, 3);
 
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("card", 3);
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("hasVoted", true);
 
-      aRoom.storeVote(aParticipant1, 10);
+      aRoom.storeVote(aParticipant1.id, 10);
 
       expect(aRoom.listParticipantsWithVote()[0]).to.have.property("card", 10);
     });
