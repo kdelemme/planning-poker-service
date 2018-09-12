@@ -16,7 +16,7 @@ describe("startVote", () => {
     let room, participant;
 
     beforeEach(() => {
-      room = new Room({ room: "a room" });
+      room = new Room({ name: "a room" });
       admin = new Participant({ name: "John" });
       participant = new Participant({ name: "Alice" });
       room.storeParticipant(admin);

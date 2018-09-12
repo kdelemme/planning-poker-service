@@ -16,7 +16,7 @@ describe("removeParticipant", () => {
     let room, participant, anotherParticipant;
 
     beforeEach(async () => {
-      room = new Room({ room: "a room" });
+      room = new Room({ name: "a room" });
       participant = new Participant({ name: "Alice" });
       anotherParticipant = new Participant({ name: "Bob" });
       room.storeParticipant(participant);

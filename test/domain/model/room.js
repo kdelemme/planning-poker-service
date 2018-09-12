@@ -7,17 +7,17 @@ describe("Room", () => {
     const aRoom = new Room();
 
     expect(aRoom).to.have.property("id").which.is.not.null;
-    expect(aRoom).to.have.property("room").which.is.undefined;
+    expect(aRoom).to.have.property("name").which.is.undefined;
     expect(aRoom).to.have.property("participants").which.is.empty;
     expect(aRoom).to.have.property("voteInProgress").which.is.false;
   });
 
   it("should initiate with a name and default parameters", () => {
-    const aRoom = new Room({ room: "a room" });
+    const aRoom = new Room({ name: "a room" });
 
     expect(aRoom).to.have.property("id").which.is.not.null;
     expect(aRoom)
-      .to.have.property("room")
+      .to.have.property("name")
       .which.is.eq("a room");
     expect(aRoom).to.have.property("participants").which.is.empty;
     expect(aRoom).to.have.property("voteInProgress").which.is.false;
@@ -66,7 +66,7 @@ describe("Room", () => {
     });
   });
 
-  describe("removeParticipant", () => {
+  describe("removeParticipantById", () => {
     let aRoom, aParticipant1, aParticipant2;
 
     beforeEach(() => {
@@ -80,7 +80,7 @@ describe("Room", () => {
     it("should remove participant from participants list", () => {
       expect(aRoom.listParticipants()).to.have.lengthOf(2);
 
-      aRoom.removeParticipant(aParticipant1);
+      aRoom.removeParticipantById(aParticipant1.id);
 
       expect(aRoom.listParticipants()).to.have.lengthOf(1);
       expect(aRoom.listParticipants()[0]).to.have.property("id", aParticipant2.id);
@@ -90,7 +90,7 @@ describe("Room", () => {
       expect(aParticipant1.isAdmin).to.be.true;
       expect(aParticipant2.isAdmin).to.be.false;
 
-      aRoom.removeParticipant(aParticipant1);
+      aRoom.removeParticipantById(aParticipant1.id);
 
       expect(aRoom.isAdmin(aParticipant2.id)).to.be.true;
     });

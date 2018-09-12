@@ -1,9 +1,9 @@
 const uuid = require("uuid/v4");
 
 module.exports = class Room {
-  constructor({ id = uuid(), room = undefined, participants = [], voteInProgress = false } = {}) {
+  constructor({ id = uuid(), name = undefined, participants = [], voteInProgress = false } = {}) {
     this.id = id;
-    this.room = room;
+    this.name = name;
     this.participants = participants;
     this.voteInProgress = voteInProgress;
   }
@@ -19,10 +19,6 @@ module.exports = class Room {
     return this.participants.find(participant => participant.id === id);
   }
 
-  participantByName(name) {
-    return this.participants.find(participant => participant.name === name);
-  }
-
   listParticipants() {
     return this.participants.map(({ id, name, isAdmin, hasVoted }) => {
       return { id, name, isAdmin, hasVoted };
@@ -33,17 +29,13 @@ module.exports = class Room {
     return this.participants;
   }
 
-  removeParticipant(participant) {
-    this.participants = this.participants.filter(p => p.id !== participant.id);
+  removeParticipantById(participantId) {
+    this.participants = this.participants.filter(p => p.id !== participantId);
 
     let adminStillConnected = this.participants.find(p => p.isAdmin);
     if (!adminStillConnected && this.participants.length > 0) {
       this.participants[0].markAsAdmin();
     }
-  }
-
-  numberOfParticipants() {
-    return rooms[room].participants.length;
   }
 
   startVote(participant) {

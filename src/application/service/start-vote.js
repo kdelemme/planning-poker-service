@@ -8,8 +8,8 @@ module.exports = class StartVote {
     if (room != null) {
       const participant = room.findParticipantById(participantId);
       if (room.startVote(participant)) {
-        await this.roomRepository.save(room);
-        return { participants: room.listParticipants(), voteStarted: true };
+        const updated = await this.roomRepository.save(room);
+        return { participants: updated.listParticipants(), voteStarted: true };
       }
     }
 

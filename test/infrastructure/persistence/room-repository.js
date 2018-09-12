@@ -14,7 +14,7 @@ describe("RoomRepository", () => {
     });
 
     it("should save the room", () => {
-      const aRoom = new Room({ room: "a room" });
+      const aRoom = new Room({ name: "a room" });
 
       repository.save(aRoom);
 
@@ -22,7 +22,7 @@ describe("RoomRepository", () => {
     });
 
     it("should update an existing room", () => {
-      const aRoom = new Room({ room: "a room" });
+      const aRoom = new Room({ name: "a room" });
       repository.save(aRoom);
 
       aRoom.storeParticipant(new Participant({ name: "Alice" }));

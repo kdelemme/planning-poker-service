@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=production node src/index.js",
-    "start:dev": "nodemon src/index.js",
-    "test": "mocha --recursive",
-    "test:watch": "mocha -w --recursive"
+    "dev": "NODE_ENV=production nodemon src/index.js",
+    "test": "NODE_ENV=test mocha --recursive",
+    "test:watch": "NODE_ENV=test mocha -w --recursive"
   },
   "author": "Kevin Delemme",
   "license": "MIT",
@@ -22,6 +22,7 @@
     "awilix": "^3.0.8",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
+    "mongodb": "^3.1.4",
     "socket.io": "^2.1.1",
     "uuid": "^3.2.1"
   }

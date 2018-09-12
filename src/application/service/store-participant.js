@@ -10,12 +10,12 @@ module.exports = class StoreParticipant {
     if (room != null) {
       const participant = new Participant({ id: participantId, name: participantName });
       room.storeParticipant(participant);
-      await this.roomRepository.save(room);
+      const savedRoom = await this.roomRepository.save(room);
 
       return {
         participant,
-        participants: room.listParticipants(),
-        voteInProgress: room.voteInProgress
+        participants: savedRoom.listParticipants(),
+        voteInProgress: savedRoom.voteInProgress
       };
     }
   }
