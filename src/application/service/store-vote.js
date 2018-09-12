@@ -7,8 +7,7 @@ module.exports = class StartVote {
     const room = await this.roomRepository.findByRoomName(roomName);
 
     if (room != null) {
-      const participant = room.findParticipantById(participantId);
-      room.storeVote(participant, card);
+      room.storeVote(participantId, card);
 
       const allParticipantsHaveVoted = room.allParticipantsHaveVoted();
       if (allParticipantsHaveVoted) {

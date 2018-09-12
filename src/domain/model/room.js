@@ -15,10 +15,6 @@ module.exports = class Room {
     }
   }
 
-  findParticipantById(id) {
-    return this.participants.find(participant => participant.id === id);
-  }
-
   listParticipants() {
     return this.participants.map(({ id, name, isAdmin, hasVoted }) => {
       return { id, name, isAdmin, hasVoted };
@@ -29,7 +25,7 @@ module.exports = class Room {
     return this.participants;
   }
 
-  removeParticipantById(participantId) {
+  removeParticipant(participantId) {
     this.participants = this.participants.filter(p => p.id !== participantId);
 
     let adminStillConnected = this.participants.find(p => p.isAdmin);
@@ -38,8 +34,8 @@ module.exports = class Room {
     }
   }
 
-  startVote(participant) {
-    if (!this.isAdmin(participant.id)) {
+  startVote(participantId) {
+    if (!this.isAdmin(participantId)) {
       return false;
     }
     this.voteInProgress = true;
@@ -48,13 +44,15 @@ module.exports = class Room {
     return true;
   }
 
-  storeVote(participant, card) {
-    let voter = this.participants.find(p => p.id === participant.id);
+  storeVote(participantId, card) {
+    let voter = this.participants.find(p => p.id === participantId);
     voter.vote(card);
   }
 
   completeVote() {
-    this.voteInProgress = false;
+    if (this.allParticipantsHaveVoted()) {
+      this.voteInProgress = false;
+    }
   }
 
   allParticipantsHaveVoted() {

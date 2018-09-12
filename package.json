@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=production node src/index.js",
-    "dev": "NODE_ENV=production nodemon src/index.js",
+    "dev": "nodemon src/index.js",
     "test": "NODE_ENV=test mocha --recursive",
     "test:watch": "NODE_ENV=test mocha -w --recursive"
   },

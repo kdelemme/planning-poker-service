@@ -6,7 +6,7 @@ module.exports = class RemoveParticipant {
   async execute({ roomName, participantId }) {
     const room = await this.roomRepository.findByRoomName(roomName);
     if (room != null) {
-      room.removeParticipantById(participantId);
+      room.removeParticipant(participantId);
 
       const allParticipantsHaveVoted = room.allParticipantsHaveVoted();
       if (allParticipantsHaveVoted) {

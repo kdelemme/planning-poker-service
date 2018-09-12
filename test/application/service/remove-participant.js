@@ -36,7 +36,7 @@ describe("removeParticipant", () => {
     });
 
     it("should return that all participants have voted after removing the participant", async () => {
-      room.storeVote(anotherParticipant, "5");
+      room.storeVote(anotherParticipant.id, "5");
       await roomRepository.save(room);
 
       const { participants, allParticipantsHaveVoted, participantsWithVote } = await removeParticipant.execute({

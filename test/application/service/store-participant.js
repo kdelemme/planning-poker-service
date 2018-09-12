@@ -37,7 +37,7 @@ describe("storeParticipant", () => {
     });
 
     it("should return the status on the current vote", async () => {
-      room.startVote(participant);
+      room.startVote(participant.id);
       await roomRepository.save(room);
 
       const participantId = uuid();
