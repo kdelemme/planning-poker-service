@@ -1,4 +1,3 @@
-const assert = require("assert");
 const { Room, Participant } = require("../../domain/model");
 
 module.exports = class MongoRoomRepository {
